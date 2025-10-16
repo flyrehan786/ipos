@@ -1,0 +1,69 @@
+<div class="page-header">
+  <h2><i class="bi bi-people"></i> {{ isEditMode ? 'Edit' : 'Add' }} Client</h2>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+    <form [formGroup]="clientForm" (ngSubmit)="onSubmit()">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="name" class="form-label">Name *</label>
+          <input type="text" class="form-control" id="name" formControlName="name">
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input type="email" class="form-control" id="email" formControlName="email">
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="phone" class="form-label">Phone *</label>
+          <input type="text" class="form-control" id="phone" formControlName="phone">
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="city" class="form-label">City</label>
+          <input type="text" class="form-control" id="city" formControlName="city">
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="country" class="form-label">Country</label>
+          <input type="text" class="form-control" id="country" formControlName="country">
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="tax_id" class="form-label">Tax ID</label>
+          <input type="text" class="form-control" id="tax_id" formControlName="tax_id">
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="credit_limit" class="form-label">Credit Limit</label>
+          <input type="number" class="form-control" id="credit_limit" formControlName="credit_limit">
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="status" class="form-label">Status *</label>
+          <select class="form-select" id="status" formControlName="status">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+
+        <div class="col-12 mb-3">
+          <label for="address" class="form-label">Address</label>
+          <textarea class="form-control" id="address" rows="3" formControlName="address"></textarea>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary" [disabled]="loading || clientForm.invalid">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+          {{ isEditMode ? 'Update' : 'Create' }} Client
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>

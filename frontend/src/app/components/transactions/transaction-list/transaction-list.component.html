@@ -1,0 +1,75 @@
+<div class="page-header">
+  <h2><i class="bi bi-cash-stack"></i> Transactions</h2>
+  <p>View all financial transactions</p>
+</div>
+
+<div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+  <i class="bi bi-exclamation-triangle"></i> {{ error }}
+  <button type="button" class="btn-close" (click)="error = ''"></button>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-4">
+    <div class="card stat-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+      <h3>{{ getTotalIncome() | number:'1.2-2' }}</h3>
+      <p><i class="bi bi-arrow-down-circle"></i> Total Income</p>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card stat-card" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+      <h3>{{ getTotalExpense() | number:'1.2-2' }}</h3>
+      <p><i class="bi bi-arrow-up-circle"></i> Total Expense</p>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card stat-card" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+      <h3>{{ getNetBalance() | number:'1.2-2' }}</h3>
+      <p><i class="bi bi-wallet2"></i> Net Balance</p>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">Transaction History</div>
+  <div class="card-body">
+    <div *ngIf="loading" class="loading-spinner">
+      <div class="spinner-border text-primary" role="status"></div>
+    </div>
+
+    <div *ngIf="!loading" class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Reference</th>
+            <th>Amount</th>
+            <th>Payment Method</th>
+            <th>Notes</th>
+            <th>User</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let transaction of transactions">
+            <td>{{ transaction.id }}</td>
+            <td>{{ transaction.transaction_date | date:'short' }}</td>
+            <td>
+              <span class="badge" [ngClass]="getTypeClass(transaction.transaction_type)">
+                {{ transaction.transaction_type }}
+              </span>
+            </td>
+            <td>{{ transaction.reference_type || 'N/A' }} #{{ transaction.reference_id || '' }}</td>
+            <td>{{ transaction.amount | number:'1.2-2' }}</td>
+            <td>{{ transaction.payment_method }}</td>
+            <td>{{ transaction.notes || 'N/A' }}</td>
+            <td>{{ transaction.user_name || 'N/A' }}</td>
+          </tr>
+          <tr *ngIf="transactions.length === 0">
+            <td colspan="8" class="text-center">No transactions found</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

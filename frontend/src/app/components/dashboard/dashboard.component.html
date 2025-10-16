@@ -1,0 +1,80 @@
+<div class="page-header">
+  <h2><i class="bi bi-speedometer2"></i> Dashboard</h2>
+  <p>Welcome to your POS system overview</p>
+</div>
+
+<div *ngIf="loading" class="loading-spinner">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+</div>
+
+<div *ngIf="!loading" class="row">
+  <div class="col-md-3 mb-3">
+    <div class="card stat-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+      <h3>{{ stats.totalSales }}</h3>
+      <p><i class="bi bi-cart-check"></i> Total Sales</p>
+    </div>
+  </div>
+
+  <div class="col-md-3 mb-3">
+    <div class="card stat-card" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+      <h3>{{ stats.totalPurchases }}</h3>
+      <p><i class="bi bi-bag-plus"></i> Total Purchases</p>
+    </div>
+  </div>
+
+  <div class="col-md-3 mb-3">
+    <div class="card stat-card" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+      <h3>{{ stats.totalProducts }}</h3>
+      <p><i class="bi bi-box-seam"></i> Total Products</p>
+    </div>
+  </div>
+
+  <div class="col-md-3 mb-3">
+    <div class="card stat-card" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+      <h3>{{ stats.totalClients }}</h3>
+      <p><i class="bi bi-people"></i> Total Clients</p>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <i class="bi bi-exclamation-triangle"></i> Low Stock Alert
+      </div>
+      <div class="card-body">
+        <div *ngIf="stats.lowStockProducts > 0" class="alert alert-warning">
+          <strong>{{ stats.lowStockProducts }}</strong> products are running low on stock!
+          <a routerLink="/products" class="alert-link">View Products</a>
+        </div>
+        <div *ngIf="stats.lowStockProducts === 0" class="alert alert-success">
+          All products are well stocked!
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <i class="bi bi-lightning"></i> Quick Actions
+      </div>
+      <div class="card-body">
+        <div class="d-grid gap-2">
+          <a routerLink="/sale-orders/new" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> New Sale Order
+          </a>
+          <a routerLink="/purchase-orders/new" class="btn btn-warning">
+            <i class="bi bi-plus-circle"></i> New Purchase Order
+          </a>
+          <a routerLink="/products/new" class="btn btn-info text-white">
+            <i class="bi bi-plus-circle"></i> Add Product
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

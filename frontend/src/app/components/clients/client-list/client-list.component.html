@@ -1,0 +1,69 @@
+<div class="page-header">
+  <h2><i class="bi bi-people"></i> Clients</h2>
+  <p>Manage your client database</p>
+</div>
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>Client List</span>
+    <button class="btn btn-primary btn-sm" routerLink="/clients/new">
+      <i class="bi bi-plus-circle"></i> Add Client
+    </button>
+  </div>
+  <div class="card-body">
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <input type="text" class="form-control" placeholder="Search clients..." 
+               [(ngModel)]="searchTerm" (input)="onSearch()">
+      </div>
+    </div>
+
+    <div *ngIf="loading" class="loading-spinner">
+      <div class="spinner-border text-primary" role="status"></div>
+    </div>
+
+    <div *ngIf="!loading" class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>City</th>
+            <th>Credit Limit</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let client of filteredClients">
+            <td>{{ client.id }}</td>
+            <td>{{ client.name }}</td>
+            <td>{{ client.email || 'N/A' }}</td>
+            <td>{{ client.phone }}</td>
+            <td>{{ client.city || 'N/A' }}</td>
+            <td>{{ client.credit_limit | number:'1.2-2' }}</td>
+            <td>
+              <span class="badge" [class.bg-success]="client.status === 'active'" 
+                    [class.bg-secondary]="client.status === 'inactive'">
+                {{ client.status }}
+              </span>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-info me-1" (click)="editClient(client.id!)">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button class="btn btn-sm btn-danger" (click)="deleteClient(client.id!)">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="filteredClients.length === 0">
+            <td colspan="8" class="text-center">No clients found</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

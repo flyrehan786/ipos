@@ -1,0 +1,167 @@
+<div class="page-header">
+  <h2><i class="bi bi-cart-check"></i> {{ isEditMode ? 'View' : 'New' }} Sale Order</h2>
+</div>
+
+<div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card mb-3">
+      <div class="card-header">Order Details</div>
+      <div class="card-body">
+        <form [formGroup]="orderForm">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Order Number *</label>
+              <input type="text" class="form-control" formControlName="order_number">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Order Date *</label>
+              <input type="date" class="form-control" formControlName="order_date">
+            </div>
+            <div class="col-md-12 mb-3">
+              <label class="form-label">Client</label>
+              <select class="form-select" formControlName="client_id">
+                <option [ngValue]="null">Walk-in Customer</option>
+                <option *ngFor="let client of clients" [ngValue]="client.id">{{ client.name }}</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-header">Add Products</div>
+      <div class="card-body">
+        <app-barcode-scanner (barcodeScanned)="onBarcodeScanned($event)"></app-barcode-scanner>
+        
+        <div class="row mt-3">
+          <div class="col-md-5 mb-2">
+            <select class="form-select" (change)="onProductSelect($event)">
+              <option value="">Select Product</option>
+              <option *ngFor="let product of products" [value]="product.id">
+                {{ product.name }} - {{ product.sale_price | number:'1.2-2' }}
+              </option>
+            </select>
+          </div>
+          <div class="col-md-3 mb-2">
+            <input type="number" class="form-control" [(ngModel)]="itemQuantity" placeholder="Quantity" min="1">
+          </div>
+          <div class="col-md-2 mb-2">
+            <input type="number" class="form-control" [(ngModel)]="itemDiscount" placeholder="Discount" min="0">
+          </div>
+          <div class="col-md-2 mb-2">
+            <button class="btn btn-primary w-100" (click)="addItem()" [disabled]="!selectedProduct">
+              <i class="bi bi-plus"></i> Add
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive mt-3">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Discount</th>
+                <th>Total</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of orderItems; let i = index">
+                <td>{{ item.product_name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.unit_price | number:'1.2-2' }}</td>
+                <td>{{ item.discount | number:'1.2-2' }}</td>
+                <td>{{ item.total | number:'1.2-2' }}</td>
+                <td>
+                  <button class="btn btn-sm btn-danger" (click)="removeItem(i)">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="orderItems.length === 0">
+                <td colspan="6" class="text-center">No items added</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card mb-3">
+      <div class="card-header">Order Summary</div>
+      <div class="card-body">
+        <form [formGroup]="orderForm">
+          <div class="mb-3">
+            <label class="form-label">Discount Type</label>
+            <select class="form-select" formControlName="discount_type">
+              <option value="none">None</option>
+              <option value="percentage">Percentage</option>
+              <option value="fixed">Fixed Amount</option>
+            </select>
+          </div>
+          <div class="mb-3" *ngIf="orderForm.value.discount_type !== 'none'">
+            <label class="form-label">Discount Value</label>
+            <input type="number" class="form-control" formControlName="discount_value" min="0">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Tax Rate (%)</label>
+            <input type="number" class="form-control" formControlName="tax_rate" min="0" max="100">
+          </div>
+
+          <hr>
+
+          <div class="d-flex justify-content-between mb-2">
+            <strong>Subtotal:</strong>
+            <span>{{ calculateSubtotal() | number:'1.2-2' }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <strong>Discount:</strong>
+            <span>-{{ calculateDiscount() | number:'1.2-2' }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <strong>Tax:</strong>
+            <span>{{ calculateTax() | number:'1.2-2' }}</span>
+          </div>
+          <hr>
+          <div class="d-flex justify-content-between mb-3">
+            <h5>Total:</h5>
+            <h5>{{ calculateTotal() | number:'1.2-2' }}</h5>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Paid Amount</label>
+            <input type="number" class="form-control" formControlName="paid_amount" min="0">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Payment Method</label>
+            <select class="form-select" formControlName="payment_method">
+              <option value="cash">Cash</option>
+              <option value="card">Card</option>
+              <option value="bank_transfer">Bank Transfer</option>
+              <option value="cheque">Cheque</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Notes</label>
+            <textarea class="form-control" rows="2" formControlName="notes"></textarea>
+          </div>
+        </form>
+
+        <div class="d-grid gap-2">
+          <button class="btn btn-success" (click)="onSubmit()" [disabled]="loading || orderItems.length === 0">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+            <i class="bi bi-check-circle"></i> Complete Order
+          </button>
+          <button class="btn btn-secondary" (click)="cancel()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

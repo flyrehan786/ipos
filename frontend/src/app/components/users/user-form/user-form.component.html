@@ -1,0 +1,58 @@
+<div class="page-header">
+  <h2><i class="bi bi-person-gear"></i> {{ isEditMode ? 'Edit' : 'Add' }} User</h2>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+    <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="username" class="form-label">Username *</label>
+          <input type="text" class="form-control" id="username" formControlName="username">
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="email" class="form-label">Email *</label>
+          <input type="email" class="form-control" id="email" formControlName="email">
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="full_name" class="form-label">Full Name *</label>
+          <input type="text" class="form-control" id="full_name" formControlName="full_name">
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="password" class="form-label">Password {{ isEditMode ? '(leave blank to keep current)' : '*' }}</label>
+          <input type="password" class="form-control" id="password" formControlName="password">
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="role" class="form-label">Role *</label>
+          <select class="form-select" id="role" formControlName="role">
+            <option value="admin">Admin</option>
+            <option value="manager">Manager</option>
+            <option value="cashier">Cashier</option>
+          </select>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="status" class="form-label">Status *</label>
+          <select class="form-select" id="status" formControlName="status">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary" [disabled]="loading || userForm.invalid">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+          {{ isEditMode ? 'Update' : 'Create' }} User
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,67 @@
+<div class="page-header">
+  <h2><i class="bi bi-bag-plus"></i> Purchase Orders</h2>
+  <p>Manage your purchase transactions</p>
+</div>
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>Purchase Order List</span>
+    <button class="btn btn-primary btn-sm" routerLink="/purchase-orders/new">
+      <i class="bi bi-plus-circle"></i> New Purchase Order
+    </button>
+  </div>
+  <div class="card-body">
+    <div *ngIf="loading" class="loading-spinner">
+      <div class="spinner-border text-primary" role="status"></div>
+    </div>
+
+    <div *ngIf="!loading" class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Order #</th>
+            <th>Supplier</th>
+            <th>Date</th>
+            <th>Total Amount</th>
+            <th>Paid Amount</th>
+            <th>Balance</th>
+            <th>Payment Status</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let order of orders">
+            <td>{{ order.order_number }}</td>
+            <td>{{ order.supplier_name }}</td>
+            <td>{{ order.order_date | date:'short' }}</td>
+            <td>{{ order.total_amount | number:'1.2-2' }}</td>
+            <td>{{ order.paid_amount | number:'1.2-2' }}</td>
+            <td>{{ (order.total_amount - order.paid_amount) | number:'1.2-2' }}</td>
+            <td>
+              <span class="badge" [ngClass]="getPaymentStatusClass(order.payment_status)">
+                {{ order.payment_status }}
+              </span>
+            </td>
+            <td>
+              <span class="badge" [ngClass]="getStatusClass(order.status)">
+                {{ order.status }}
+              </span>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-info me-1" (click)="viewOrder(order.id!)">
+                <i class="bi bi-eye"></i>
+              </button>
+              <button class="btn btn-sm btn-danger" (click)="deleteOrder(order.id!)">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="orders.length === 0">
+            <td colspan="9" class="text-center">No purchase orders found</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
