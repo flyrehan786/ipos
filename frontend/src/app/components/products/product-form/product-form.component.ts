@@ -5,7 +5,8 @@ import { ProductService } from '../../../services/product.service';
 
 @Component({
   selector: 'app-product-form',
-  templateUrl: './product-form.component.html'
+  templateUrl: './product-form.component.html',
+  styleUrls: ['./product-form.component.css']
 })
 export class ProductFormComponent implements OnInit {
   productForm!: FormGroup;
@@ -13,6 +14,10 @@ export class ProductFormComponent implements OnInit {
   productId?: number;
   loading = false;
   error = '';
+  scannerMode = false;
+  scannerListening = false;
+  barcodeBuffer = '';
+  lastKeyTime = 0;
 
   categories = ['Electronics', 'Clothing', 'Food & Beverages', 'Home & Garden', 'Sports', 'Books', 'Toys', 'Health & Beauty', 'Automotive', 'Office Supplies'];
   units = ['pcs', 'kg', 'ltr', 'box', 'pack', 'dozen'];
@@ -81,5 +86,66 @@ export class ProductFormComponent implements OnInit {
 
   cancel(): void {
     this.router.navigate(['/products']);
+  }
+
+  toggleScannerMode(): void {
+    this.scannerMode = !this.scannerMode;
+    if (this.scannerMode) {
+      this.startScanning();
+    } else {
+      this.stopScanning();
+    }
+  }
+
+  startScanning(): void {
+    this.scannerListening = true;
+    this.barcodeBuffer = '';
+    // Focus on a hidden input or the barcode field
+    setTimeout(() => {
+      const barcodeInput = document.getElementById('barcode') as HTMLInputElement;
+      if (barcodeInput) {
+        barcodeInput.focus();
+      }
+    }, 100);
+  }
+
+  stopScanning(): void {
+    this.scannerListening = false;
+    this.barcodeBuffer = '';
+  }
+
+  onBarcodeKeyPress(event: KeyboardEvent): void {
+    if (!this.scannerMode) return;
+
+    const currentTime = new Date().getTime();
+    
+    // If more than 100ms between keystrokes, reset buffer (manual typing)
+    if (currentTime - this.lastKeyTime > 100) {
+      this.barcodeBuffer = '';
+    }
+    
+    this.lastKeyTime = currentTime;
+
+    // Handle Enter key (scanner typically sends Enter at the end)
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      if (this.barcodeBuffer.length > 0) {
+        this.productForm.patchValue({ barcode: this.barcodeBuffer });
+        this.barcodeBuffer = '';
+        this.scannerMode = false;
+        this.scannerListening = false;
+      }
+    } else if (event.key.length === 1) {
+      // Add character to buffer
+      this.barcodeBuffer += event.key;
+    }
+  }
+
+  onBarcodeInput(event: any): void {
+    // Handle paste or direct input in manual mode
+    if (!this.scannerMode) {
+      const value = event.target.value;
+      this.productForm.patchValue({ barcode: value });
+    }
   }
 }

@@ -1,0 +1,39 @@
+.barcode-scanner-wrapper {
+  margin-bottom: 1rem;
+}
+
+.input-group-text {
+  background-color: #f8f9fa;
+  border-right: none;
+}
+
+.input-group .form-control {
+  border-left: none;
+  border-right: none;
+}
+
+.input-group .form-control:focus {
+  border-color: #ced4da;
+  box-shadow: none;
+}
+
+.input-group .form-control.scanner-active {
+  background-color: #e3f2fd;
+  border-color: #2196f3;
+}
+
+.input-group .btn {
+  border-left: none;
+}
+
+.input-group .btn i {
+  margin-right: 5px;
+}
+
+small.text-muted {
+  font-size: 0.875rem;
+}
+
+small.text-muted i {
+  margin-right: 3px;
+}

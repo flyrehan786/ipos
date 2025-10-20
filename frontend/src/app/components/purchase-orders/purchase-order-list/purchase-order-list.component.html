@@ -1,16 +1,23 @@
-<div class="page-header">
-  <h2><i class="bi bi-bag-plus"></i> Purchase Orders</h2>
-  <p>Manage your purchase transactions</p>
+<div class="page-header d-flex justify-content-between align-items-center">
+  <div>
+    <h2>Purchase Orders</h2>
+    <p>Manage your purchase transactions</p>
+  </div>
+  <button class="btn btn-primary" routerLink="/purchase-orders/new">
+    New Purchase Order
+  </button>
 </div>
 
 <div class="card">
-  <div class="card-header d-flex justify-content-between align-items-center">
+  <div class="card-header">
     <span>Purchase Order List</span>
-    <button class="btn btn-primary btn-sm" routerLink="/purchase-orders/new">
-      <i class="bi bi-plus-circle"></i> New Purchase Order
-    </button>
   </div>
   <div class="card-body">
+    <div class="mb-3">
+      <input type="text" class="form-control" placeholder="Search purchase orders..." 
+             [(ngModel)]="searchTerm" (input)="onSearch()">
+    </div>
+
     <div *ngIf="loading" class="loading-spinner">
       <div class="spinner-border text-primary" role="status"></div>
     </div>
@@ -31,7 +38,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let order of orders">
+          <tr *ngFor="let order of paginatedOrders">
             <td>{{ order.order_number }}</td>
             <td>{{ order.supplier_name }}</td>
             <td>{{ order.order_date | date:'short' }}</td>
@@ -39,29 +46,43 @@
             <td>{{ order.paid_amount | number:'1.2-2' }}</td>
             <td>{{ (order.total_amount - order.paid_amount) | number:'1.2-2' }}</td>
             <td>
-              <span class="badge" [ngClass]="getPaymentStatusClass(order.payment_status)">
+              <span class="badge bg-light text-dark border">
                 {{ order.payment_status }}
               </span>
             </td>
             <td>
-              <span class="badge" [ngClass]="getStatusClass(order.status)">
+              <span class="badge bg-light text-dark border">
                 {{ order.status }}
               </span>
             </td>
             <td>
               <button class="btn btn-sm btn-info me-1" (click)="viewOrder(order.id!)">
-                <i class="bi bi-eye"></i>
+                View
               </button>
               <button class="btn btn-sm btn-danger" (click)="deleteOrder(order.id!)">
-                <i class="bi bi-trash"></i>
+                Delete
               </button>
             </td>
           </tr>
-          <tr *ngIf="orders.length === 0">
+          <tr *ngIf="paginatedOrders.length === 0">
             <td colspan="9" class="text-center">No purchase orders found</td>
           </tr>
         </tbody>
       </table>
+
+      <nav *ngIf="totalPages > 1" class="mt-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <button class="btn btn-outline-primary" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+            Previous
+          </button>
+          <span class="text-muted">
+            Page {{ currentPage }} of {{ totalPages }} ({{ filteredOrders.length }} total items)
+          </span>
+          <button class="btn btn-outline-primary" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+            Next
+          </button>
+        </div>
+      </nav>
     </div>
   </div>
 </div>

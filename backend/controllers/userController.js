@@ -106,3 +106,40 @@ exports.deleteUser = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+exports.changePassword = async (req, res) => {
+  try {
+    const { current_password, new_password } = req.body;
+
+    if (!current_password || !new_password) {
+      return res.status(400).json({ error: 'Current password and new password are required' });
+    }
+
+    if (new_password.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters long' });
+    }
+
+    // Get user with password using findByUsername or direct query
+    const user = await User.findByIdWithPassword(req.params.id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Verify current password
+    const isValidPassword = await bcrypt.compare(current_password, user.password);
+    if (!isValidPassword) {
+      return res.status(400).json({ error: 'Current password is incorrect' });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(new_password, 10);
+
+    // Update password
+    await User.updatePassword(req.params.id, hashedPassword);
+
+    res.json({ message: 'Password changed successfully' });
+  } catch (error) {
+    console.error('Change password error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};

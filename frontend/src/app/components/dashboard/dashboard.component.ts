@@ -16,6 +16,11 @@ export class DashboardComponent implements OnInit {
     totalClients: 0,
     lowStockProducts: 0
   };
+  lowStockProductsList: any[] = [];
+  paginatedLowStock: any[] = [];
+  currentPage = 1;
+  itemsPerPage = 10;
+  totalPages = 1;
   loading = true;
 
   constructor(
@@ -58,7 +63,26 @@ export class DashboardComponent implements OnInit {
     this.productService.getLowStock().subscribe({
       next: (products) => {
         this.stats.lowStockProducts = products.length;
+        this.lowStockProductsList = products;
+        this.updatePagination();
+      },
+      error: (err) => {
+        console.error('Error loading low stock products:', err);
       }
     });
+  }
+
+  updatePagination(): void {
+    this.totalPages = Math.ceil(this.lowStockProductsList.length / this.itemsPerPage);
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedLowStock = this.lowStockProductsList.slice(startIndex, endIndex);
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePagination();
+    }
   }
 }

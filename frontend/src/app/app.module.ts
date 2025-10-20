@@ -22,6 +22,8 @@ import { TransactionListComponent } from './components/transactions/transaction-
 import { UserListComponent } from './components/users/user-list/user-list.component';
 import { UserFormComponent } from './components/users/user-form/user-form.component';
 import { BarcodeScannerComponent } from './components/barcode-scanner/barcode-scanner.component';
+import { ProfileComponent } from './components/profile/profile.component';
+import { ChangePasswordComponent } from './components/change-password/change-password.component';
 
 @NgModule({
   declarations: [
@@ -40,7 +42,9 @@ import { BarcodeScannerComponent } from './components/barcode-scanner/barcode-sc
     TransactionListComponent,
     UserListComponent,
     UserFormComponent,
-    BarcodeScannerComponent
+    BarcodeScannerComponent,
+    ProfileComponent,
+    ChangePasswordComponent
   ],
   imports: [
     BrowserModule,

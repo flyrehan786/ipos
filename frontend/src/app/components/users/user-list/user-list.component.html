@@ -1,16 +1,23 @@
-<div class="page-header">
-  <h2><i class="bi bi-person-gear"></i> Users</h2>
-  <p>Manage system users</p>
+<div class="page-header d-flex justify-content-between align-items-center">
+  <div>
+    <h2>Users</h2>
+    <p>Manage system users</p>
+  </div>
+  <button class="btn btn-primary" routerLink="/users/new">
+    Add User
+  </button>
 </div>
 
 <div class="card">
-  <div class="card-header d-flex justify-content-between align-items-center">
+  <div class="card-header">
     <span>User List</span>
-    <button class="btn btn-primary btn-sm" routerLink="/users/new">
-      <i class="bi bi-plus-circle"></i> Add User
-    </button>
   </div>
   <div class="card-body">
+    <div class="mb-3">
+      <input type="text" class="form-control" placeholder="Search users..." 
+             [(ngModel)]="searchTerm" (input)="onSearch()">
+    </div>
+
     <div *ngIf="loading" class="loading-spinner">
       <div class="spinner-border text-primary" role="status"></div>
     </div>
@@ -29,36 +36,49 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let user of users">
+          <tr *ngFor="let user of paginatedUsers">
             <td>{{ user.id }}</td>
             <td>{{ user.username }}</td>
             <td>{{ user.full_name }}</td>
             <td>{{ user.email }}</td>
             <td>
-              <span class="badge" 
-                    [class.bg-danger]="user.role === 'admin'"
-                    [class.bg-warning]="user.role === 'manager'"
-                    [class.bg-info]="user.role === 'cashier'">
+              <span class="badge bg-light text-dark border">
                 {{ user.role }}
               </span>
             </td>
             <td>
-              <span class="badge" [class.bg-success]="user.status === 'active'" 
-                    [class.bg-secondary]="user.status === 'inactive'">
+              <span class="badge bg-light text-dark border">
                 {{ user.status }}
               </span>
             </td>
             <td>
               <button class="btn btn-sm btn-info me-1" (click)="editUser(user.id!)">
-                <i class="bi bi-pencil"></i>
+                Edit
               </button>
               <button class="btn btn-sm btn-danger" (click)="deleteUser(user.id!)">
-                <i class="bi bi-trash"></i>
+                Delete
               </button>
             </td>
           </tr>
+          <tr *ngIf="paginatedUsers.length === 0">
+            <td colspan="7" class="text-center">No users found</td>
+          </tr>
         </tbody>
       </table>
+
+      <nav *ngIf="totalPages > 1" class="mt-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <button class="btn btn-outline-primary" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+            Previous
+          </button>
+          <span class="text-muted">
+            Page {{ currentPage }} of {{ totalPages }} ({{ filteredUsers.length }} total items)
+          </span>
+          <button class="btn btn-outline-primary" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+            Next
+          </button>
+        </div>
+      </nav>
     </div>
   </div>
 </div>

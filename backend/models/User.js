@@ -24,6 +24,11 @@ class User {
     return rows[0];
   }
 
+  static async findByIdWithPassword(id) {
+    const [rows] = await db.execute('SELECT * FROM users WHERE id = ?', [id]);
+    return rows[0];
+  }
+
   static async getAll() {
     const [rows] = await db.execute('SELECT id, username, email, full_name, role, status, created_at FROM users ORDER BY created_at DESC');
     return rows;

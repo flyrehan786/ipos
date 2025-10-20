@@ -9,7 +9,15 @@ import { User } from '../../../models/user.model';
 })
 export class UserListComponent implements OnInit {
   users: User[] = [];
+  filteredUsers: User[] = [];
+  paginatedUsers: User[] = [];
   loading = true;
+  searchTerm = '';
+  
+  // Pagination
+  currentPage = 1;
+  itemsPerPage = 10;
+  totalPages = 1;
 
   constructor(
     private userService: UserService,
@@ -24,12 +32,47 @@ export class UserListComponent implements OnInit {
     this.userService.getAll().subscribe({
       next: (data) => {
         this.users = data;
+        this.filteredUsers = data;
+        this.updatePagination();
         this.loading = false;
       },
       error: () => {
         this.loading = false;
       }
     });
+  }
+
+  onSearch(): void {
+    if (!this.searchTerm) {
+      this.filteredUsers = this.users;
+    } else {
+      this.filteredUsers = this.users.filter(user =>
+        user.username.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        user.full_name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        user.role.toLowerCase().includes(this.searchTerm.toLowerCase())
+      );
+    }
+    this.currentPage = 1;
+    this.updatePagination();
+  }
+
+  updatePagination(): void {
+    this.totalPages = Math.ceil(this.filteredUsers.length / this.itemsPerPage);
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedUsers = this.filteredUsers.slice(startIndex, endIndex);
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePagination();
+    }
+  }
+
+  get pages(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
   }
 
   editUser(id: number): void {

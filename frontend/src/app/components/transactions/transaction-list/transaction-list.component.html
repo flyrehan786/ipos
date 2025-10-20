@@ -1,30 +1,30 @@
 <div class="page-header">
-  <h2><i class="bi bi-cash-stack"></i> Transactions</h2>
+  <h2>Transactions</h2>
   <p>View all financial transactions</p>
 </div>
 
 <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
-  <i class="bi bi-exclamation-triangle"></i> {{ error }}
+  {{ error }}
   <button type="button" class="btn-close" (click)="error = ''"></button>
 </div>
 
 <div class="row mb-4">
   <div class="col-md-4">
-    <div class="card stat-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-      <h3>{{ getTotalIncome() | number:'1.2-2' }}</h3>
-      <p><i class="bi bi-arrow-down-circle"></i> Total Income</p>
+    <div class="card stat-card" style="background: white; border: 1px solid #dee2e6;">
+      <h3 class="text-dark">{{ getTotalIncome() | number:'1.2-2' }}</h3>
+      <p class="text-dark">Total Income</p>
     </div>
   </div>
   <div class="col-md-4">
-    <div class="card stat-card" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
-      <h3>{{ getTotalExpense() | number:'1.2-2' }}</h3>
-      <p><i class="bi bi-arrow-up-circle"></i> Total Expense</p>
+    <div class="card stat-card" style="background: white; border: 1px solid #dee2e6;">
+      <h3 class="text-dark">{{ getTotalExpense() | number:'1.2-2' }}</h3>
+      <p class="text-dark">Total Expense</p>
     </div>
   </div>
   <div class="col-md-4">
-    <div class="card stat-card" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
-      <h3>{{ getNetBalance() | number:'1.2-2' }}</h3>
-      <p><i class="bi bi-wallet2"></i> Net Balance</p>
+    <div class="card stat-card" style="background: white; border: 1px solid #dee2e6;">
+      <h3 class="text-dark">{{ getNetBalance() | number:'1.2-2' }}</h3>
+      <p class="text-dark">Net Balance</p>
     </div>
   </div>
 </div>
@@ -32,6 +32,11 @@
 <div class="card">
   <div class="card-header">Transaction History</div>
   <div class="card-body">
+    <div class="mb-3">
+      <input type="text" class="form-control" placeholder="Search transactions..." 
+             [(ngModel)]="searchTerm" (input)="onSearch()">
+    </div>
+
     <div *ngIf="loading" class="loading-spinner">
       <div class="spinner-border text-primary" role="status"></div>
     </div>
@@ -51,11 +56,11 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let transaction of transactions">
+          <tr *ngFor="let transaction of paginatedTransactions">
             <td>{{ transaction.id }}</td>
             <td>{{ transaction.transaction_date | date:'short' }}</td>
             <td>
-              <span class="badge" [ngClass]="getTypeClass(transaction.transaction_type)">
+              <span class="badge bg-light text-dark border">
                 {{ transaction.transaction_type }}
               </span>
             </td>
@@ -65,11 +70,25 @@
             <td>{{ transaction.notes || 'N/A' }}</td>
             <td>{{ transaction.user_name || 'N/A' }}</td>
           </tr>
-          <tr *ngIf="transactions.length === 0">
+          <tr *ngIf="paginatedTransactions.length === 0">
             <td colspan="8" class="text-center">No transactions found</td>
           </tr>
         </tbody>
       </table>
+
+      <nav *ngIf="totalPages > 1" class="mt-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <button class="btn btn-outline-primary" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+            Previous
+          </button>
+          <span class="text-muted">
+            Page {{ currentPage }} of {{ totalPages }} ({{ filteredTransactions.length }} total items)
+          </span>
+          <button class="btn btn-outline-primary" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+            Next
+          </button>
+        </div>
+      </nav>
     </div>
   </div>
 </div>

@@ -10,8 +10,14 @@ import { Product } from '../../../models/product.model';
 export class ProductListComponent implements OnInit {
   products: Product[] = [];
   filteredProducts: Product[] = [];
+  paginatedProducts: Product[] = [];
   loading = true;
   searchTerm = '';
+  
+  // Pagination
+  currentPage = 1;
+  itemsPerPage = 10;
+  totalPages = 1;
 
   constructor(
     private productService: ProductService,
@@ -27,6 +33,7 @@ export class ProductListComponent implements OnInit {
       next: (data) => {
         this.products = data;
         this.filteredProducts = data;
+        this.updatePagination();
         this.loading = false;
       },
       error: () => {
@@ -38,15 +45,34 @@ export class ProductListComponent implements OnInit {
   onSearch(): void {
     if (!this.searchTerm) {
       this.filteredProducts = this.products;
-      return;
+    } else {
+      this.filteredProducts = this.products.filter(product =>
+        product.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        product.sku.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        product.category.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        product.barcode?.includes(this.searchTerm)
+      );
     }
+    this.currentPage = 1;
+    this.updatePagination();
+  }
 
-    this.filteredProducts = this.products.filter(product =>
-      product.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-      product.sku.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-      product.category.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-      product.barcode?.includes(this.searchTerm)
-    );
+  updatePagination(): void {
+    this.totalPages = Math.ceil(this.filteredProducts.length / this.itemsPerPage);
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedProducts = this.filteredProducts.slice(startIndex, endIndex);
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePagination();
+    }
+  }
+
+  get pages(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
   }
 
   editProduct(id: number): void {

@@ -14,6 +14,8 @@ import { PurchaseOrderFormComponent } from './components/purchase-orders/purchas
 import { TransactionListComponent } from './components/transactions/transaction-list/transaction-list.component';
 import { UserListComponent } from './components/users/user-list/user-list.component';
 import { UserFormComponent } from './components/users/user-form/user-form.component';
+import { ProfileComponent } from './components/profile/profile.component';
+import { ChangePasswordComponent } from './components/change-password/change-password.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -34,7 +36,9 @@ const routes: Routes = [
   { path: 'transactions', component: TransactionListComponent, canActivate: [AuthGuard] },
   { path: 'users', component: UserListComponent, canActivate: [AuthGuard] },
   { path: 'users/new', component: UserFormComponent, canActivate: [AuthGuard] },
-  { path: 'users/edit/:id', component: UserFormComponent, canActivate: [AuthGuard] }
+  { path: 'users/edit/:id', component: UserFormComponent, canActivate: [AuthGuard] },
+  { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
+  { path: 'change-password', component: ChangePasswordComponent, canActivate: [AuthGuard] }
 ];
 
 @NgModule({

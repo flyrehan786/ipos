@@ -10,8 +10,14 @@ import { Client } from '../../../models/client.model';
 export class ClientListComponent implements OnInit {
   clients: Client[] = [];
   filteredClients: Client[] = [];
+  paginatedClients: Client[] = [];
   loading = true;
   searchTerm = '';
+  
+  // Pagination
+  currentPage = 1;
+  itemsPerPage = 10;
+  totalPages = 1;
 
   constructor(
     private clientService: ClientService,
@@ -27,6 +33,7 @@ export class ClientListComponent implements OnInit {
       next: (data) => {
         this.clients = data;
         this.filteredClients = data;
+        this.updatePagination();
         this.loading = false;
       },
       error: () => {
@@ -38,14 +45,33 @@ export class ClientListComponent implements OnInit {
   onSearch(): void {
     if (!this.searchTerm) {
       this.filteredClients = this.clients;
-      return;
+    } else {
+      this.filteredClients = this.clients.filter(client =>
+        client.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        client.email?.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        client.phone.includes(this.searchTerm)
+      );
     }
+    this.currentPage = 1;
+    this.updatePagination();
+  }
 
-    this.filteredClients = this.clients.filter(client =>
-      client.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-      client.email?.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-      client.phone.includes(this.searchTerm)
-    );
+  updatePagination(): void {
+    this.totalPages = Math.ceil(this.filteredClients.length / this.itemsPerPage);
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedClients = this.filteredClients.slice(startIndex, endIndex);
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePagination();
+    }
+  }
+
+  get pages(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
   }
 
   editClient(id: number): void {

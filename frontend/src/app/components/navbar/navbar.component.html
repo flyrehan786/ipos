@@ -1,7 +1,7 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
   <div class="container-fluid">
     <a class="navbar-brand" routerLink="/dashboard">
-      <i class="bi bi-shop"></i> POS System
+      System
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
@@ -10,49 +10,50 @@
       <ul class="navbar-nav me-auto">
         <li class="nav-item">
           <a class="nav-link" routerLink="/dashboard" routerLinkActive="active">
-            <i class="bi bi-speedometer2"></i> Dashboard
+            Dashboard
           </a>
         </li>
         <li class="nav-item">
           <a class="nav-link" routerLink="/sale-orders" routerLinkActive="active">
-            <i class="bi bi-cart-check"></i> Sales
+            Sales
           </a>
         </li>
         <li class="nav-item">
           <a class="nav-link" routerLink="/purchase-orders" routerLinkActive="active">
-            <i class="bi bi-bag-plus"></i> Purchases
+            Purchases
           </a>
         </li>
         <li class="nav-item">
           <a class="nav-link" routerLink="/products" routerLinkActive="active">
-            <i class="bi bi-box-seam"></i> Products
+            Products
           </a>
         </li>
         <li class="nav-item">
           <a class="nav-link" routerLink="/clients" routerLinkActive="active">
-            <i class="bi bi-people"></i> Clients
+            Clients
           </a>
         </li>
         <li class="nav-item">
           <a class="nav-link" routerLink="/transactions" routerLinkActive="active">
-            <i class="bi bi-cash-stack"></i> Transactions
+            Transactions
           </a>
         </li>
         <li class="nav-item" *ngIf="authService.currentUserValue?.role === 'admin'">
           <a class="nav-link" routerLink="/users" routerLinkActive="active">
-            <i class="bi bi-person-gear"></i> Users
+            Users
           </a>
         </li>
       </ul>
       <ul class="navbar-nav">
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-            <i class="bi bi-person-circle"></i> {{ authService.currentUserValue?.full_name }}
+          <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            {{ authService.currentUserValue?.full_name }}
           </a>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="#"><i class="bi bi-person"></i> Profile</a></li>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" routerLink="/profile" style="cursor: pointer;">My Profile</a></li>
+            <li><a class="dropdown-item" routerLink="/change-password" style="cursor: pointer;">Change Password</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" (click)="logout()" style="cursor: pointer;"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+            <li><a class="dropdown-item" (click)="logout()" style="cursor: pointer;">Logout</a></li>
           </ul>
         </li>
       </ul>
