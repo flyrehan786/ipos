@@ -144,14 +144,21 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         responsive: true,
         maintainAspectRatio: false,
         animation: {
-          duration: 1000,
-          easing: 'easeInOutQuart',
+          duration: 2000,
+          easing: 'easeOutQuart',
           delay: (context) => {
             let delay = 0;
             if (context.type === 'data' && context.mode === 'default') {
-              delay = context.dataIndex * 100;
+              delay = context.dataIndex * 200;
             }
             return delay;
+          }
+        },
+        transitions: {
+          active: {
+            animation: {
+              duration: 400
+            }
           }
         },
         plugins: {
@@ -208,14 +215,21 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         responsive: true,
         maintainAspectRatio: false,
         animation: {
-          duration: 1000,
-          easing: 'easeInOutQuart',
+          duration: 2000,
+          easing: 'easeOutQuart',
           delay: (context) => {
             let delay = 0;
             if (context.type === 'data' && context.mode === 'default') {
-              delay = context.dataIndex * 100;
+              delay = context.dataIndex * 200;
             }
             return delay;
+          }
+        },
+        transitions: {
+          active: {
+            animation: {
+              duration: 400
+            }
           }
         },
         plugins: {
