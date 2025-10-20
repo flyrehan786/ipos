@@ -1,6 +1,6 @@
-<div class="page-header">
-  <h2>Dashboard</h2>
-  <p>Welcome to your POS system overview</p>
+<div class="page-header mb-3">
+  <h4 class="mb-1">Dashboard</h4>
+  <p class="small text-muted mb-0">Welcome to your POS system overview</p>
 </div>
 
 <div *ngIf="loading" class="loading-spinner">
@@ -9,105 +9,191 @@
   </div>
 </div>
 
-<div *ngIf="!loading" class="row">
-  <div class="col-md-3 mb-3">
-    <div class="card stat-card" style="background: white; border: 1px solid #dee2e6;">
-      <h3 class="text-dark">{{ stats.totalSales }}</h3>
-      <p class="text-dark">Total Sales</p>
-    </div>
-  </div>
-
-  <div class="col-md-3 mb-3">
-    <div class="card stat-card" style="background: white; border: 1px solid #dee2e6;">
-      <h3 class="text-dark">{{ stats.totalPurchases }}</h3>
-      <p class="text-dark">Total Purchases</p>
-    </div>
-  </div>
-
-  <div class="col-md-3 mb-3">
-    <div class="card stat-card" style="background: white; border: 1px solid #dee2e6;">
-      <h3 class="text-dark">{{ stats.totalProducts }}</h3>
-      <p class="text-dark">Total Products</p>
-    </div>
-  </div>
-
-  <div class="col-md-3 mb-3">
-    <div class="card stat-card" style="background: white; border: 1px solid #dee2e6;">
-      <h3 class="text-dark">{{ stats.totalClients }}</h3>
-      <p class="text-dark">Total Clients</p>
-    </div>
-  </div>
-</div>
-
-<div class="row">
-  <div class="col-md-6">
-    <div class="card">
-      <div class="card-header">
-        Low Stock Alert
+<div *ngIf="!loading">
+  <!-- Stats Cards -->
+  <div class="row mb-3">
+    <div class="col-md-3 mb-2">
+      <div class="card stat-card" style="background: white; border: 1px solid #dee2e6; padding: 10px;">
+        <h4 class="text-dark mb-1">{{ stats.totalSales }}</h4>
+        <p class="text-dark small mb-0">Total Sales</p>
       </div>
-      <div class="card-body">
-        <div *ngIf="stats.lowStockProducts > 0">
-          <p class="text-warning"><strong>{{ stats.lowStockProducts }}</strong> products are running low on stock!</p>
-          <div class="table-responsive">
-            <table class="table table-sm">
-              <thead>
-                <tr>
-                  <th>Product</th>
-                  <th>Stock</th>
-                  <th>Min Level</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let product of paginatedLowStock">
-                  <td>{{ product.name }}</td>
-                  <td>
-                    <span class="badge bg-warning text-dark">{{ product.stock_quantity }}</span>
-                  </td>
-                  <td>{{ product.min_stock_level }}</td>
-                </tr>
-              </tbody>
-            </table>
+    </div>
+
+    <div class="col-md-3 mb-2">
+      <div class="card stat-card" style="background: white; border: 1px solid #dee2e6; padding: 10px;">
+        <h4 class="text-dark mb-1">{{ stats.totalPurchases }}</h4>
+        <p class="text-dark small mb-0">Total Purchases</p>
+      </div>
+    </div>
+
+    <div class="col-md-3 mb-2">
+      <div class="card stat-card" style="background: white; border: 1px solid #dee2e6; padding: 10px;">
+        <h4 class="text-dark mb-1">{{ stats.totalProducts }}</h4>
+        <p class="text-dark small mb-0">Total Products</p>
+      </div>
+    </div>
+
+    <div class="col-md-3 mb-2">
+      <div class="card stat-card" style="background: white; border: 1px solid #dee2e6; padding: 10px;">
+        <h4 class="text-dark mb-1">{{ stats.totalClients }}</h4>
+        <p class="text-dark small mb-0">Total Clients</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Row -->
+  <div class="row">
+    <!-- Left Column - Charts -->
+    <div class="col-md-6">
+      <!-- Sales Chart -->
+      <div class="card mb-2">
+        <div class="card-header d-flex justify-content-between align-items-center py-1">
+          <span class="small fw-bold"><i class="bi bi-graph-up"></i> Sales Statistics</span>
+          <select class="form-select form-select-sm" style="width: 120px; font-size: 0.8rem;" (change)="onSalesFilterChange($event)">
+            <option value="day">Today</option>
+            <option value="week" selected>Last 7 Days</option>
+            <option value="month">Last Month</option>
+          </select>
+        </div>
+        <div class="card-body p-2">
+          <div style="height: 170px;">
+            <canvas id="salesChart"></canvas>
           </div>
-
-          <nav *ngIf="totalPages > 1" class="mt-3">
-            <div class="d-flex justify-content-between align-items-center">
-              <button class="btn btn-sm btn-outline-primary" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
-                Previous
-              </button>
-              <span class="text-muted">
-                Page {{ currentPage }} of {{ totalPages }}
-              </span>
-              <button class="btn btn-sm btn-outline-primary" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
-                Next
-              </button>
-            </div>
-          </nav>
-
-          <a routerLink="/products" class="btn btn-sm btn-primary mt-2">View All Products</a>
         </div>
-        <div *ngIf="stats.lowStockProducts === 0" class="alert alert-success">
-          All products are well stocked!
+      </div>
+
+      <!-- Purchase Chart -->
+      <div class="card mb-2">
+        <div class="card-header d-flex justify-content-between align-items-center py-1">
+          <span class="small fw-bold"><i class="bi bi-cart"></i> Purchase Statistics</span>
+          <select class="form-select form-select-sm" style="width: 120px; font-size: 0.8rem;" (change)="onPurchaseFilterChange($event)">
+            <option value="day">Today</option>
+            <option value="week" selected>Last 7 Days</option>
+            <option value="month">Last Month</option>
+          </select>
+        </div>
+        <div class="card-body p-2">
+          <div style="height: 170px;">
+            <canvas id="purchaseChart"></canvas>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="col-md-6">
-    <div class="card">
-      <div class="card-header">
-        Quick Actions
+    <!-- Right Column -->
+    <div class="col-md-6">
+      <!-- Top Row: Quick Actions & Top Selling -->
+      <div class="row mb-2">
+        <!-- Quick Actions -->
+        <div class="col-md-6 mb-2">
+          <div class="card h-100">
+            <div class="card-header py-1">
+              <small class="fw-bold"><i class="bi bi-lightning"></i> Quick Actions</small>
+            </div>
+            <div class="card-body p-2">
+              <div class="d-grid gap-2">
+                <a routerLink="/sale-orders/new" class="btn btn-primary">
+                  <i class="bi bi-cart-plus"></i> New Sale
+                </a>
+                <a routerLink="/purchase-orders/new" class="btn btn-warning">
+                  <i class="bi bi-bag-plus"></i> New Purchase
+                </a>
+                <a routerLink="/products/new" class="btn btn-info text-white">
+                  <i class="bi bi-plus-circle"></i> Add Product
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Selling Products -->
+        <div class="col-md-6 mb-2">
+          <div class="card h-100">
+            <div class="card-header py-1">
+              <small class="fw-bold"><i class="bi bi-trophy"></i> Top Selling</small>
+            </div>
+            <div class="card-body p-2">
+              <div *ngIf="topSellingProducts.length > 0" class="table-responsive" style="max-height: 140px; overflow-y: auto;">
+                <table class="table table-sm table-hover mb-0">
+                  <thead>
+                    <tr>
+                      <th style="width: 30px;">#</th>
+                      <th>Product</th>
+                      <th class="text-end" style="width: 50px;">Qty</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let product of topSellingProducts; let i = index">
+                      <td>
+                        <span class="badge badge-sm" [ngClass]="{
+                          'bg-warning text-dark': i === 0,
+                          'bg-secondary': i === 1,
+                          'bg-info': i === 2,
+                          'bg-light text-dark': i > 2
+                        }">{{ i + 1 }}</span>
+                      </td>
+                      <td class="small">{{ product.name }}</td>
+                      <td class="text-end"><strong>{{ product.quantity }}</strong></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div *ngIf="topSellingProducts.length === 0" class="text-center py-3">
+                <small class="text-muted">No sales data yet</small>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="card-body">
-        <div class="d-grid gap-2">
-          <a routerLink="/sale-orders/new" class="btn btn-primary">
-            New Sale Order
-          </a>
-          <a routerLink="/purchase-orders/new" class="btn btn-warning">
-            New Purchase Order
-          </a>
-          <a routerLink="/products/new" class="btn btn-info text-white">
-            Add Product
-          </a>
+
+      <!-- Low Stock Alert - Full Width -->
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header py-1 d-flex justify-content-between align-items-center">
+            <small class="fw-bold"><i class="bi bi-exclamation-triangle"></i> Low Stock Alert</small>
+            <small class="text-warning" *ngIf="stats.lowStockProducts > 0"><strong>{{ stats.lowStockProducts }}</strong> products low</small>
+          </div>
+          <div class="card-body p-2">
+            <div *ngIf="stats.lowStockProducts > 0">
+              <div class="table-responsive" style="max-height: 140px; overflow-y: auto;">
+                <table class="table table-sm mb-0">
+                  <thead>
+                    <tr>
+                      <th class="small">Product</th>
+                      <th class="small">Stock</th>
+                      <th class="small">Min</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let product of paginatedLowStock">
+                      <td class="small">{{ product.name }}</td>
+                      <td>
+                        <span class="badge bg-warning text-dark">{{ product.stock_quantity }}</span>
+                      </td>
+                      <td class="small">{{ product.min_stock_level }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div *ngIf="totalPages > 1" class="d-flex justify-content-between align-items-center mt-2">
+                <button class="btn btn-sm btn-outline-primary" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+                  <i class="bi bi-chevron-left"></i>
+                </button>
+                <span class="text-muted small">
+                  Page {{ currentPage }}/{{ totalPages }}
+                </span>
+                <button class="btn btn-sm btn-outline-primary" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+                  <i class="bi bi-chevron-right"></i>
+                </button>
+              </div>
+
+              <a routerLink="/products" class="btn btn-sm btn-primary mt-2 w-100">View All</a>
+            </div>
+            <div *ngIf="stats.lowStockProducts === 0" class="alert alert-success mb-0 small">
+              All products well stocked!
+            </div>
+          </div>
         </div>
       </div>
     </div>
