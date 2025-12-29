@@ -3,8 +3,6 @@ node_modules/
 */node_modules/
 
 # Environment variables
-.env
-*.env
 
 # Build outputs
 dist/
