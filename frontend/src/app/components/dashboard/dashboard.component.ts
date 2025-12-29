@@ -187,6 +187,20 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     };
 
     this.salesChart = new Chart(canvas, config);
+    try {
+      const reduced = typeof window !== 'undefined' && (window as any).matchMedia && (window as any).matchMedia('(prefers-reduced-motion: reduce)').matches;
+      console.debug('Dashboard: prefers-reduced-motion =', reduced);
+      // Trigger a reset and update to start animations if the browser allows it
+      if (this.salesChart) {
+        // ensure animation options exist
+        if (!this.salesChart.options) this.salesChart.options = {} as any;
+        (this.salesChart.options as any).animation = (this.salesChart.options as any).animation || { duration: 2000, easing: 'easeOutQuart' };
+        this.salesChart.reset();
+        this.salesChart.update();
+      }
+    } catch (err) {
+      console.warn('Unable to trigger sales chart animation', err);
+    }
   }
 
   createPurchaseChart(): void {
@@ -258,6 +272,18 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     };
 
     this.purchaseChart = new Chart(canvas, config);
+    try {
+      const reduced = typeof window !== 'undefined' && (window as any).matchMedia && (window as any).matchMedia('(prefers-reduced-motion: reduce)').matches;
+      console.debug('Dashboard: prefers-reduced-motion =', reduced);
+      if (this.purchaseChart) {
+        if (!this.purchaseChart.options) this.purchaseChart.options = {} as any;
+        (this.purchaseChart.options as any).animation = (this.purchaseChart.options as any).animation || { duration: 2000, easing: 'easeOutQuart' };
+        this.purchaseChart.reset();
+        this.purchaseChart.update();
+      }
+    } catch (err) {
+      console.warn('Unable to trigger purchase chart animation', err);
+    }
   }
 
   getSalesChartData(): { labels: string[], values: number[] } {
