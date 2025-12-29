@@ -1,45 +1,56 @@
-<div class="container">
-  <div class="row justify-content-center align-items-center min-vh-100">
-    <div class="col-md-5">
-      <div class="card shadow">
-        <div class="card-body p-5">
-          <div class="text-center mb-4">
-            <h2 class="mb-2"><i class="bi bi-shop"></i> POS System</h2>
-            <p class="text-muted">Sign in to your account</p>
-          </div>
+<video autoplay muted loop id="myVideo">
+  <source src="assets/background.mp4" type="video/mp4">
+</video>
 
-          <div *ngIf="error" class="alert alert-danger" role="alert">
-            <i class="bi bi-exclamation-triangle"></i> {{ error }}
-          </div>
-
-          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-            <div class="mb-3">
-              <label for="username" class="form-label">Username</label>
-              <input type="text" class="form-control" id="username" formControlName="username" 
-                     [class.is-invalid]="loginForm.get('username')?.invalid && loginForm.get('username')?.touched">
-              <div class="invalid-feedback">Username is required</div>
-            </div>
-
-            <div class="mb-3">
-              <label for="password" class="form-label">Password</label>
-              <input type="password" class="form-control" id="password" formControlName="password"
-                     [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
-              <div class="invalid-feedback">Password is required</div>
-            </div>
-
-            <button type="submit" class="btn btn-primary w-100" [disabled]="loading">
-              <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
-              {{ loading ? 'Signing in...' : 'Sign In' }}
-            </button>
-          </form>
-
-          <div class="mt-4 text-center">
-            <small class="text-muted">
-              Default credentials: <br>
-              <strong>Username:</strong> admin | <strong>Password:</strong> password123
-            </small>
-          </div>
+<div class="login-page">
+  <video autoplay muted loop id="myVideo">
+    <source src="assets/background.mp4" type="video/mp4">
+  </video>
+  
+  <div class="branding-container">
+    <div class="brand-content">
+      <h1>Omnify</h1>
+      <p class="tagline">Free, Modern, Simple, Reliable <strong>POS</strong> System</p>
+    </div>
+  </div>
+  
+  <div class="login-form-container">
+    <div class="card shadow">
+      <div class="card-body p-5">
+        <div class="text-center mb-4">
+          <h1 class="mb-2">Omnify</h1>
+          <p class="text-muted">Sign in to your account</p>
         </div>
+
+        <div *ngIf="error" class="alert alert-danger" role="alert">
+          <i class="bi bi-exclamation-triangle"></i> {{ error }}
+        </div>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+          <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control" id="username" formControlName="username" 
+                  [class.is-invalid]="loginForm.get('username')?.invalid && loginForm.get('username')?.touched"
+                  placeholder="Enter your username">
+            <div class="invalid-feedback">Username is required</div>
+          </div>
+
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <label for="password" class="form-label">Password</label>
+              <a href="#" class="forgot-password">Forgot Password?</a>
+            </div>
+            <input type="password" class="form-control" id="password" formControlName="password"
+                  [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+                  placeholder="••••••••">
+            <div class="invalid-feedback">Password is required</div>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100" [disabled]="loading">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+            {{ loading ? 'Signing in...' : 'Sign In' }}
+          </button>
+        </form>
       </div>
     </div>
   </div>
