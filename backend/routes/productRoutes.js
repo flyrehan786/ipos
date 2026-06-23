@@ -12,6 +12,8 @@ router.get('/low-stock', authenticateToken, productController.getLowStockProduct
 router.get('/barcode/:barcode', authenticateToken, productController.getProductByBarcode);
 router.get('/:id', authenticateToken, productController.getProductById);
 router.post('/', authenticateToken, validate(productSchema), productController.createProduct);
+router.post('/bulk-delete', authenticateToken, productController.bulkDeleteProducts);
+router.post('/bulk-status', authenticateToken, productController.bulkUpdateProductStatus);
 router.put('/:id', authenticateToken, validate(productSchema), productController.updateProduct);
 router.delete('/:id', authenticateToken, productController.deleteProduct);
 

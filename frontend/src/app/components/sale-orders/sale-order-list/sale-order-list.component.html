@@ -3,9 +3,14 @@
     <h2>Sale Orders</h2>
     <p>Manage your sales transactions</p>
   </div>
-  <button class="btn btn-primary" routerLink="/sale-orders/new">
-    New Sale Order
-  </button>
+  <div class="d-flex gap-2">
+    <button class="btn btn-outline-secondary" (click)="exportCsv()">
+      Export CSV
+    </button>
+    <button class="btn btn-primary" routerLink="/sale-orders/new">
+      New Sale Order
+    </button>
+  </div>
 </div>
 
 <div class="card">

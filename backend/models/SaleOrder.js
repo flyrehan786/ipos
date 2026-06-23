@@ -142,6 +142,15 @@ class SaleOrder {
       connection.release();
     }
   }
+
+  static async bulkUpdateStatus(ids, status) {
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return 0;
+    }
+    const placeholders = ids.map(() => '?').join(',');
+    const [result] = await db.execute(`UPDATE sale_orders SET status = ? WHERE id IN (${placeholders})`, [status, ...ids]);
+    return result.affectedRows;
+  }
 }
 
 module.exports = SaleOrder;

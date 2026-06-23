@@ -56,6 +56,24 @@ class Client {
     return result.affectedRows;
   }
 
+  static async bulkDelete(ids) {
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return 0;
+    }
+    const placeholders = ids.map(() => '?').join(',');
+    const [result] = await db.execute(`DELETE FROM clients WHERE id IN (${placeholders})`, ids);
+    return result.affectedRows;
+  }
+
+  static async bulkUpdateStatus(ids, status) {
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return 0;
+    }
+    const placeholders = ids.map(() => '?').join(',');
+    const [result] = await db.execute(`UPDATE clients SET status = ? WHERE id IN (${placeholders})`, [status, ...ids]);
+    return result.affectedRows;
+  }
+
   static async getBalance(id) {
     const [rows] = await db.execute(
       'SELECT COALESCE(SUM(total_amount - paid_amount), 0) as balance FROM sale_orders WHERE client_id = ? AND status != "cancelled"',

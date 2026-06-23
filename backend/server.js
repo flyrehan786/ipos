@@ -10,6 +10,7 @@ const productRoutes = require('./routes/productRoutes');
 const saleOrderRoutes = require('./routes/saleOrderRoutes');
 const purchaseOrderRoutes = require('./routes/purchaseOrderRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
+const auditLogRoutes = require('./routes/auditLogRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -25,6 +26,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/sale-orders', saleOrderRoutes);
 app.use('/api/purchase-orders', purchaseOrderRoutes);
 app.use('/api/transactions', transactionRoutes);
+app.use('/api/audit-logs', auditLogRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'POS API Server is running' });

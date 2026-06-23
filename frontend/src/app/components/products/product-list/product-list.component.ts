@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { downloadBlob } from '../../../utils/download';
 import { Router } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
@@ -22,6 +23,8 @@ export class ProductListComponent implements OnInit, OnDestroy {
   totalPages = 1;
   totalItems = 0;
 
+  selectedIds = new Set<number>();
+
   constructor(
     private productService: ProductService,
     private router: Router
@@ -41,8 +44,16 @@ export class ProductListComponent implements OnInit, OnDestroy {
     this.searchSub?.unsubscribe();
   }
 
+  exportCsv(): void {
+    this.productService.exportCsv().subscribe({
+      next: (blob) => downloadBlob(blob, 'products.csv'),
+      error: () => {}
+    });
+  }
+
   loadProducts(): void {
     this.loading = true;
+    this.selectedIds.clear();
     this.productService.getPaginated(this.currentPage, this.itemsPerPage, this.searchTerm).subscribe({
       next: (res) => {
         this.paginatedProducts = res.data;
@@ -88,6 +99,55 @@ export class ProductListComponent implements OnInit, OnDestroy {
         }
       });
     }
+  }
+
+  isSelected(id: number): boolean {
+    return this.selectedIds.has(id);
+  }
+
+  toggleSelect(id: number): void {
+    if (this.selectedIds.has(id)) {
+      this.selectedIds.delete(id);
+    } else {
+      this.selectedIds.add(id);
+    }
+  }
+
+  get allSelected(): boolean {
+    return this.paginatedProducts.length > 0 &&
+      this.paginatedProducts.every(p => this.selectedIds.has(p.id!));
+  }
+
+  toggleSelectAll(): void {
+    if (this.allSelected) {
+      this.paginatedProducts.forEach(p => this.selectedIds.delete(p.id!));
+    } else {
+      this.paginatedProducts.forEach(p => this.selectedIds.add(p.id!));
+    }
+  }
+
+  bulkDelete(): void {
+    if (this.selectedIds.size === 0) {
+      return;
+    }
+    if (confirm(`Delete ${this.selectedIds.size} selected product(s)?`)) {
+      this.productService.bulkDelete(Array.from(this.selectedIds)).subscribe({
+        next: () => {
+          this.loadProducts();
+        }
+      });
+    }
+  }
+
+  bulkSetStatus(status: 'active' | 'inactive'): void {
+    if (this.selectedIds.size === 0) {
+      return;
+    }
+    this.productService.bulkUpdateStatus(Array.from(this.selectedIds), status).subscribe({
+      next: () => {
+        this.loadProducts();
+      }
+    });
   }
 
   isLowStock(product: Product): boolean {

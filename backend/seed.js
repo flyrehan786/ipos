@@ -47,6 +47,19 @@ async function createTables() {
   `);
 
   await connection.query(`
+    CREATE TABLE IF NOT EXISTS audit_logs (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT,
+      username VARCHAR(50),
+      action VARCHAR(50) NOT NULL,
+      entity_type VARCHAR(50),
+      entity_id VARCHAR(50),
+      details TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await connection.query(`
     CREATE TABLE IF NOT EXISTS clients (
       id INT AUTO_INCREMENT PRIMARY KEY,
       name VARCHAR(100) NOT NULL,

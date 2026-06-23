@@ -10,6 +10,8 @@ router.get('/export', authenticateToken, clientController.exportClients);
 router.get('/search', authenticateToken, clientController.searchClients);
 router.get('/:id', authenticateToken, clientController.getClientById);
 router.post('/', authenticateToken, validate(clientSchema), clientController.createClient);
+router.post('/bulk-delete', authenticateToken, clientController.bulkDeleteClients);
+router.post('/bulk-status', authenticateToken, clientController.bulkUpdateClientStatus);
 router.put('/:id', authenticateToken, validate(clientSchema), clientController.updateClient);
 router.delete('/:id', authenticateToken, clientController.deleteClient);
 

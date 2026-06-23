@@ -3,9 +3,23 @@
     <h2>Clients</h2>
     <p>Manage your client database</p>
   </div>
-  <button class="btn btn-primary" routerLink="/clients/new">
-    Add Client
-  </button>
+  <div class="d-flex gap-2">
+    <button *ngIf="selectedIds.size > 0" class="btn btn-outline-success" (click)="bulkSetStatus('active')">
+      Activate ({{ selectedIds.size }})
+    </button>
+    <button *ngIf="selectedIds.size > 0" class="btn btn-outline-warning" (click)="bulkSetStatus('inactive')">
+      Deactivate ({{ selectedIds.size }})
+    </button>
+    <button *ngIf="selectedIds.size > 0" class="btn btn-danger" (click)="bulkDelete()">
+      Delete Selected ({{ selectedIds.size }})
+    </button>
+    <button class="btn btn-outline-secondary" (click)="exportCsv()">
+      Export CSV
+    </button>
+    <button class="btn btn-primary" routerLink="/clients/new">
+      Add Client
+    </button>
+  </div>
 </div>
 
 <div class="card">
@@ -26,6 +40,9 @@
       <table class="table table-hover">
         <thead>
           <tr>
+            <th style="width: 1%">
+              <input type="checkbox" class="form-check-input" [checked]="allSelected" (change)="toggleSelectAll()">
+            </th>
             <th>ID</th>
             <th>Name</th>
             <th>Email</th>
@@ -37,7 +54,10 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let client of paginatedClients">
+          <tr *ngFor="let client of paginatedClients" [class.table-active]="isSelected(client.id!)">
+            <td>
+              <input type="checkbox" class="form-check-input" [checked]="isSelected(client.id!)" (change)="toggleSelect(client.id!)">
+            </td>
             <td>{{ client.id }}</td>
             <td>{{ client.name }}</td>
             <td>{{ client.email || 'N/A' }}</td>
@@ -59,7 +79,7 @@
             </td>
           </tr>
           <tr *ngIf="paginatedClients.length === 0">
-            <td colspan="8" class="text-center">No clients found</td>
+            <td colspan="9" class="text-center">No clients found</td>
           </tr>
         </tbody>
       </table>

@@ -1,6 +1,9 @@
 const Client = require('../models/Client');
 const { getPaginationParams, buildPaginatedResponse } = require('../utils/pagination');
 const { toCsv } = require('../utils/csv');
+const { parseIds } = require('../utils/ids');
+const { isValidStatus } = require('../utils/status');
+const { recordAudit } = require('../utils/audit');
 
 exports.exportClients = async (req, res) => {
   try {
@@ -79,6 +82,7 @@ exports.createClient = async (req, res) => {
       status: status || 'active'
     });
 
+    await recordAudit(req, 'create', 'client', clientId);
     res.status(201).json({ message: 'Client created successfully', clientId });
   } catch (error) {
     console.error('Create client error:', error);
@@ -116,9 +120,43 @@ exports.updateClient = async (req, res) => {
 exports.deleteClient = async (req, res) => {
   try {
     await Client.delete(req.params.id);
+    await recordAudit(req, 'delete', 'client', req.params.id);
     res.json({ message: 'Client deleted successfully' });
   } catch (error) {
     console.error('Delete client error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+exports.bulkDeleteClients = async (req, res) => {
+  try {
+    const ids = parseIds(req.body.ids);
+    if (ids.length === 0) {
+      return res.status(400).json({ error: 'A non-empty array of valid ids is required' });
+    }
+    const deleted = await Client.bulkDelete(ids);
+    await recordAudit(req, 'bulk-delete', 'client', ids.join(','), { deleted });
+    res.json({ message: `${deleted} client(s) deleted successfully`, deleted });
+  } catch (error) {
+    console.error('Bulk delete clients error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+exports.bulkUpdateClientStatus = async (req, res) => {
+  try {
+    const ids = parseIds(req.body.ids);
+    if (ids.length === 0) {
+      return res.status(400).json({ error: 'A non-empty array of valid ids is required' });
+    }
+    if (!isValidStatus(req.body.status)) {
+      return res.status(400).json({ error: 'status must be "active" or "inactive"' });
+    }
+    const updated = await Client.bulkUpdateStatus(ids, req.body.status);
+    await recordAudit(req, 'bulk-status', 'client', ids.join(','), { status: req.body.status, updated });
+    res.json({ message: `${updated} client(s) updated successfully`, updated });
+  } catch (error) {
+    console.error('Bulk update client status error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

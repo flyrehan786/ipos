@@ -3,9 +3,14 @@
     <h2>Purchase Orders</h2>
     <p>Manage your purchase transactions</p>
   </div>
-  <button class="btn btn-primary" routerLink="/purchase-orders/new">
-    New Purchase Order
-  </button>
+  <div class="d-flex gap-2">
+    <button class="btn btn-outline-secondary" (click)="exportCsv()">
+      Export CSV
+    </button>
+    <button class="btn btn-primary" routerLink="/purchase-orders/new">
+      New Purchase Order
+    </button>
+  </div>
 </div>
 
 <div class="card">

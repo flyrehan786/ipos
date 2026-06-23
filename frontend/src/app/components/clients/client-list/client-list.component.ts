@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { downloadBlob } from '../../../utils/download';
 import { Router } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
@@ -22,6 +23,8 @@ export class ClientListComponent implements OnInit, OnDestroy {
   totalPages = 1;
   totalItems = 0;
 
+  selectedIds = new Set<number>();
+
   constructor(
     private clientService: ClientService,
     private router: Router
@@ -41,8 +44,16 @@ export class ClientListComponent implements OnInit, OnDestroy {
     this.searchSub?.unsubscribe();
   }
 
+  exportCsv(): void {
+    this.clientService.exportCsv().subscribe({
+      next: (blob) => downloadBlob(blob, 'clients.csv'),
+      error: () => {}
+    });
+  }
+
   loadClients(): void {
     this.loading = true;
+    this.selectedIds.clear();
     this.clientService.getPaginated(this.currentPage, this.itemsPerPage, this.searchTerm).subscribe({
       next: (res) => {
         this.paginatedClients = res.data;
@@ -88,5 +99,54 @@ export class ClientListComponent implements OnInit, OnDestroy {
         }
       });
     }
+  }
+
+  isSelected(id: number): boolean {
+    return this.selectedIds.has(id);
+  }
+
+  toggleSelect(id: number): void {
+    if (this.selectedIds.has(id)) {
+      this.selectedIds.delete(id);
+    } else {
+      this.selectedIds.add(id);
+    }
+  }
+
+  get allSelected(): boolean {
+    return this.paginatedClients.length > 0 &&
+      this.paginatedClients.every(c => this.selectedIds.has(c.id!));
+  }
+
+  toggleSelectAll(): void {
+    if (this.allSelected) {
+      this.paginatedClients.forEach(c => this.selectedIds.delete(c.id!));
+    } else {
+      this.paginatedClients.forEach(c => this.selectedIds.add(c.id!));
+    }
+  }
+
+  bulkDelete(): void {
+    if (this.selectedIds.size === 0) {
+      return;
+    }
+    if (confirm(`Delete ${this.selectedIds.size} selected client(s)?`)) {
+      this.clientService.bulkDelete(Array.from(this.selectedIds)).subscribe({
+        next: () => {
+          this.loadClients();
+        }
+      });
+    }
+  }
+
+  bulkSetStatus(status: 'active' | 'inactive'): void {
+    if (this.selectedIds.size === 0) {
+      return;
+    }
+    this.clientService.bulkUpdateStatus(Array.from(this.selectedIds), status).subscribe({
+      next: () => {
+        this.loadClients();
+      }
+    });
   }
 }

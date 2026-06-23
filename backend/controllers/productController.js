@@ -1,6 +1,9 @@
 const Product = require('../models/Product');
 const { getPaginationParams, buildPaginatedResponse } = require('../utils/pagination');
 const { toCsv } = require('../utils/csv');
+const { parseIds } = require('../utils/ids');
+const { isValidStatus } = require('../utils/status');
+const { recordAudit } = require('../utils/audit');
 
 exports.exportProducts = async (req, res) => {
   try {
@@ -105,9 +108,9 @@ exports.createProduct = async (req, res) => {
       sale_price: sale_price || 0,
       stock_quantity: stock_quantity || 0,
       min_stock_level: min_stock_level || 10,
-      status: status || 'active'
     });
 
+    await recordAudit(req, 'create', 'product', productId);
     res.status(201).json({ message: 'Product created successfully', productId });
   } catch (error) {
     console.error('Create product error:', error);
@@ -152,9 +155,43 @@ exports.updateProduct = async (req, res) => {
 exports.deleteProduct = async (req, res) => {
   try {
     await Product.delete(req.params.id);
+    await recordAudit(req, 'delete', 'product', req.params.id);
     res.json({ message: 'Product deleted successfully' });
   } catch (error) {
     console.error('Delete product error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+exports.bulkDeleteProducts = async (req, res) => {
+  try {
+    const ids = parseIds(req.body.ids);
+    if (ids.length === 0) {
+      return res.status(400).json({ error: 'A non-empty array of valid ids is required' });
+    }
+    const deleted = await Product.bulkDelete(ids);
+    await recordAudit(req, 'bulk-delete', 'product', ids.join(','), { deleted });
+    res.json({ message: `${deleted} product(s) deleted successfully`, deleted });
+  } catch (error) {
+    console.error('Bulk delete products error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+exports.bulkUpdateProductStatus = async (req, res) => {
+  try {
+    const ids = parseIds(req.body.ids);
+    if (ids.length === 0) {
+      return res.status(400).json({ error: 'A non-empty array of valid ids is required' });
+    }
+    if (!isValidStatus(req.body.status)) {
+      return res.status(400).json({ error: 'status must be "active" or "inactive"' });
+    }
+    const updated = await Product.bulkUpdateStatus(ids, req.body.status);
+    await recordAudit(req, 'bulk-status', 'product', ids.join(','), { status: req.body.status, updated });
+    res.json({ message: `${updated} product(s) updated successfully`, updated });
+  } catch (error) {
+    console.error('Bulk update product status error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

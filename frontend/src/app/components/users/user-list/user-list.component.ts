@@ -22,6 +22,8 @@ export class UserListComponent implements OnInit, OnDestroy {
   totalPages = 1;
   totalItems = 0;
 
+  selectedIds = new Set<number>();
+
   constructor(
     private userService: UserService,
     private router: Router
@@ -43,6 +45,7 @@ export class UserListComponent implements OnInit, OnDestroy {
 
   loadUsers(): void {
     this.loading = true;
+    this.selectedIds.clear();
     this.userService.getPaginated(this.currentPage, this.itemsPerPage, this.searchTerm).subscribe({
       next: (res) => {
         this.paginatedUsers = res.data;
@@ -88,5 +91,54 @@ export class UserListComponent implements OnInit, OnDestroy {
         }
       });
     }
+  }
+
+  isSelected(id: number): boolean {
+    return this.selectedIds.has(id);
+  }
+
+  toggleSelect(id: number): void {
+    if (this.selectedIds.has(id)) {
+      this.selectedIds.delete(id);
+    } else {
+      this.selectedIds.add(id);
+    }
+  }
+
+  get allSelected(): boolean {
+    return this.paginatedUsers.length > 0 &&
+      this.paginatedUsers.every(u => this.selectedIds.has(u.id!));
+  }
+
+  toggleSelectAll(): void {
+    if (this.allSelected) {
+      this.paginatedUsers.forEach(u => this.selectedIds.delete(u.id!));
+    } else {
+      this.paginatedUsers.forEach(u => this.selectedIds.add(u.id!));
+    }
+  }
+
+  bulkDelete(): void {
+    if (this.selectedIds.size === 0) {
+      return;
+    }
+    if (confirm(`Delete ${this.selectedIds.size} selected user(s)?`)) {
+      this.userService.bulkDelete(Array.from(this.selectedIds)).subscribe({
+        next: () => {
+          this.loadUsers();
+        }
+      });
+    }
+  }
+
+  bulkSetStatus(status: 'active' | 'inactive'): void {
+    if (this.selectedIds.size === 0) {
+      return;
+    }
+    this.userService.bulkUpdateStatus(Array.from(this.selectedIds), status).subscribe({
+      next: () => {
+        this.loadUsers();
+      }
+    });
   }
 }

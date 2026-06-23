@@ -39,6 +39,14 @@ export class UserService {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
 
+  bulkDelete(ids: number[]): Observable<any> {
+    return this.http.post(`${this.apiUrl}/bulk-delete`, { ids });
+  }
+
+  bulkUpdateStatus(ids: number[], status: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/bulk-status`, { ids, status });
+  }
+
   changePassword(id: number, passwordData: { current_password: string, new_password: string }): Observable<any> {
     return this.http.put(`${this.apiUrl}/${id}/change-password`, passwordData);
   }

@@ -3,9 +3,23 @@
     <h2>Products</h2>
     <p>Manage your product inventory</p>
   </div>
-  <button class="btn btn-primary" routerLink="/products/new">
-    Add Product
-  </button>
+  <div class="d-flex gap-2">
+    <button *ngIf="selectedIds.size > 0" class="btn btn-outline-success" (click)="bulkSetStatus('active')">
+      Activate ({{ selectedIds.size }})
+    </button>
+    <button *ngIf="selectedIds.size > 0" class="btn btn-outline-warning" (click)="bulkSetStatus('inactive')">
+      Deactivate ({{ selectedIds.size }})
+    </button>
+    <button *ngIf="selectedIds.size > 0" class="btn btn-danger" (click)="bulkDelete()">
+      Delete Selected ({{ selectedIds.size }})
+    </button>
+    <button class="btn btn-outline-secondary" (click)="exportCsv()">
+      Export CSV
+    </button>
+    <button class="btn btn-primary" routerLink="/products/new">
+      Add Product
+    </button>
+  </div>
 </div>
 
 <div class="card">
@@ -26,6 +40,9 @@
       <table class="table table-hover">
         <thead>
           <tr>
+            <th style="width: 1%">
+              <input type="checkbox" class="form-check-input" [checked]="allSelected" (change)="toggleSelectAll()">
+            </th>
             <th>ID</th>
             <th>Name</th>
             <th>SKU</th>
@@ -39,7 +56,10 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let product of paginatedProducts" [class.table-warning]="isLowStock(product)">
+          <tr *ngFor="let product of paginatedProducts" [class.table-warning]="isLowStock(product)" [class.table-active]="isSelected(product.id!)">
+            <td>
+              <input type="checkbox" class="form-check-input" [checked]="isSelected(product.id!)" (change)="toggleSelect(product.id!)">
+            </td>
             <td>{{ product.id }}</td>
             <td>{{ product.name }}</td>
             <td>{{ product.sku }}</td>
@@ -66,7 +86,7 @@
             </td>
           </tr>
           <tr *ngIf="paginatedProducts.length === 0">
-            <td colspan="10" class="text-center">No products found</td>
+            <td colspan="11" class="text-center">No products found</td>
           </tr>
         </tbody>
       </table>

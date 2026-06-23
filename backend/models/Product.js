@@ -75,6 +75,24 @@ class Product {
     const [result] = await db.execute('DELETE FROM products WHERE id = ?', [id]);
     return result.affectedRows;
   }
+
+  static async bulkDelete(ids) {
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return 0;
+    }
+    const placeholders = ids.map(() => '?').join(',');
+    const [result] = await db.execute(`DELETE FROM products WHERE id IN (${placeholders})`, ids);
+    return result.affectedRows;
+  }
+
+  static async bulkUpdateStatus(ids, status) {
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return 0;
+    }
+    const placeholders = ids.map(() => '?').join(',');
+    const [result] = await db.execute(`UPDATE products SET status = ? WHERE id IN (${placeholders})`, [status, ...ids]);
+    return result.affectedRows;
+  }
 }
 
 module.exports = Product;

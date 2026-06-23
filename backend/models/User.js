@@ -67,6 +67,24 @@ class User {
     const [result] = await db.execute('DELETE FROM users WHERE id = ?', [id]);
     return result.affectedRows;
   }
+
+  static async bulkDelete(ids) {
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return 0;
+    }
+    const placeholders = ids.map(() => '?').join(',');
+    const [result] = await db.execute(`DELETE FROM users WHERE id IN (${placeholders})`, ids);
+    return result.affectedRows;
+  }
+
+  static async bulkUpdateStatus(ids, status) {
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return 0;
+    }
+    const placeholders = ids.map(() => '?').join(',');
+    const [result] = await db.execute(`UPDATE users SET status = ? WHERE id IN (${placeholders})`, [status, ...ids]);
+    return result.affectedRows;
+  }
 }
 
 module.exports = User;

@@ -2,6 +2,9 @@ const PurchaseOrder = require('../models/PurchaseOrder');
 const Transaction = require('../models/Transaction');
 const { getPaginationParams, buildPaginatedResponse } = require('../utils/pagination');
 const { toCsv } = require('../utils/csv');
+const { parseIds } = require('../utils/ids');
+const { isValidOrderStatus } = require('../utils/status');
+const { recordAudit } = require('../utils/audit');
 
 exports.exportPurchaseOrders = async (req, res) => {
   try {
@@ -173,6 +176,25 @@ exports.deletePurchaseOrder = async (req, res) => {
     res.json({ message: 'Purchase order deleted successfully' });
   } catch (error) {
     console.error('Delete purchase order error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+exports.bulkUpdatePurchaseOrderStatus = async (req, res) => {
+  try {
+    const ids = parseIds(req.body.ids);
+    const { status } = req.body;
+    if (ids.length === 0) {
+      return res.status(400).json({ error: 'No valid order ids provided' });
+    }
+    if (!isValidOrderStatus(status)) {
+      return res.status(400).json({ error: 'Invalid status value' });
+    }
+    const updated = await PurchaseOrder.bulkUpdateStatus(ids, status);
+    await recordAudit(req, 'bulk-status', 'purchase_order', ids.join(','), { status, updated });
+    res.json({ message: 'Purchase order status updated', updated });
+  } catch (error) {
+    console.error('Bulk update purchase order status error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

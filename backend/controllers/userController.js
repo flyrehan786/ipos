@@ -1,6 +1,9 @@
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const { getPaginationParams, buildPaginatedResponse } = require('../utils/pagination');
+const { parseIds } = require('../utils/ids');
+const { isValidStatus } = require('../utils/status');
+const { recordAudit } = require('../utils/audit');
 
 exports.getAllUsers = async (req, res) => {
   try {
@@ -60,6 +63,7 @@ exports.createUser = async (req, res) => {
       status: status || 'active'
     });
 
+    await recordAudit(req, 'create', 'user', userId);
     res.status(201).json({ message: 'User created successfully', userId });
   } catch (error) {
     console.error('Create user error:', error);
@@ -107,9 +111,43 @@ exports.deleteUser = async (req, res) => {
     }
 
     await User.delete(req.params.id);
+    await recordAudit(req, 'delete', 'user', req.params.id);
     res.json({ message: 'User deleted successfully' });
   } catch (error) {
     console.error('Delete user error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+exports.bulkDeleteUsers = async (req, res) => {
+  try {
+    const ids = parseIds(req.body.ids, { exclude: [req.user.id] });
+    if (ids.length === 0) {
+      return res.status(400).json({ error: 'A non-empty array of valid ids is required (you cannot delete your own account)' });
+    }
+    const deleted = await User.bulkDelete(ids);
+    await recordAudit(req, 'bulk-delete', 'user', ids.join(','), { deleted });
+    res.json({ message: `${deleted} user(s) deleted successfully`, deleted });
+  } catch (error) {
+    console.error('Bulk delete users error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+exports.bulkUpdateUserStatus = async (req, res) => {
+  try {
+    const ids = parseIds(req.body.ids, { exclude: [req.user.id] });
+    if (ids.length === 0) {
+      return res.status(400).json({ error: 'A non-empty array of valid ids is required (you cannot change your own status)' });
+    }
+    if (!isValidStatus(req.body.status)) {
+      return res.status(400).json({ error: 'status must be "active" or "inactive"' });
+    }
+    const updated = await User.bulkUpdateStatus(ids, req.body.status);
+    await recordAudit(req, 'bulk-status', 'user', ids.join(','), { status: req.body.status, updated });
+    res.json({ message: `${updated} user(s) updated successfully`, updated });
+  } catch (error) {
+    console.error('Bulk update user status error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

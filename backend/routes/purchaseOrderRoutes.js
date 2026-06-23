@@ -8,6 +8,7 @@ router.get('/export', authenticateToken, purchaseOrderController.exportPurchaseO
 router.get('/date-range', authenticateToken, purchaseOrderController.getPurchaseOrdersByDateRange);
 router.get('/:id', authenticateToken, purchaseOrderController.getPurchaseOrderById);
 router.post('/', authenticateToken, purchaseOrderController.createPurchaseOrder);
+router.post('/bulk-status', authenticateToken, purchaseOrderController.bulkUpdatePurchaseOrderStatus);
 router.put('/:id', authenticateToken, purchaseOrderController.updatePurchaseOrder);
 router.post('/:id/payment', authenticateToken, purchaseOrderController.addPayment);
 router.delete('/:id', authenticateToken, purchaseOrderController.deletePurchaseOrder);

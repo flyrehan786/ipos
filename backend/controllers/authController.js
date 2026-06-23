@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = require('../utils/tokens');
+const { recordAudit } = require('../utils/audit');
 
 exports.login = async (req, res) => {
   try {
@@ -28,6 +29,9 @@ exports.login = async (req, res) => {
 
     const token = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
+
+    req.user = { id: user.id, username: user.username };
+    await recordAudit(req, 'login', 'user', user.id);
 
     res.json({
       token,

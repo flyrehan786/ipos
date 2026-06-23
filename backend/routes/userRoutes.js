@@ -10,6 +10,8 @@ const { userCreateSchema, userUpdateSchema } = require('../middleware/validation
 router.get('/', authenticateToken, authorizeRole('admin'), userController.getAllUsers);
 router.get('/:id', authenticateToken, authorizeRole('admin'), userController.getUserById);
 router.post('/', authenticateToken, authorizeRole('admin'), validate(userCreateSchema), userController.createUser);
+router.post('/bulk-delete', authenticateToken, authorizeRole('admin'), userController.bulkDeleteUsers);
+router.post('/bulk-status', authenticateToken, authorizeRole('admin'), userController.bulkUpdateUserStatus);
 router.put('/:id', authenticateToken, authorizeRole('admin'), validate(userUpdateSchema), userController.updateUser);
 router.put('/:id/change-password', authenticateToken, authorizeRole('admin'), userController.changePassword);
 router.delete('/:id', authenticateToken, authorizeRole('admin'), userController.deleteUser);

@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { downloadBlob } from '../../../utils/download';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { TransactionService } from '../../../services/transaction.service';
@@ -41,6 +42,13 @@ export class TransactionListComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.searchSub?.unsubscribe();
+  }
+
+  exportCsv(): void {
+    this.transactionService.exportCsv().subscribe({
+      next: (blob) => downloadBlob(blob, 'transactions.csv'),
+      error: () => {}
+    });
   }
 
   loadSummary(): void {

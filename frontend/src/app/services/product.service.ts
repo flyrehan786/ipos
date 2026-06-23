@@ -17,6 +17,14 @@ export class ProductService {
     return this.http.get(`${this.apiUrl}/export`, { responseType: 'blob' });
   }
 
+  bulkDelete(ids: number[]): Observable<any> {
+    return this.http.post(`${this.apiUrl}/bulk-delete`, { ids });
+  }
+
+  bulkUpdateStatus(ids: number[], status: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/bulk-status`, { ids, status });
+  }
+
   getAll(): Observable<Product[]> {
     return this.http.get<Product[]>(this.apiUrl);
   }
