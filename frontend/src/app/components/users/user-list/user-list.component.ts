@@ -1,5 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { UserService } from '../../../services/user.service';
 import { User } from '../../../models/user.model';
 
@@ -7,10 +9,12 @@ import { User } from '../../../models/user.model';
   selector: 'app-user-list',
   templateUrl: './user-list.component.html'
 })
-export class UserListComponent implements OnInit {
+export class UserListComponent implements OnInit, OnDestroy {
   paginatedUsers: User[] = [];
   loading = true;
   searchTerm = '';
+  private searchSubject = new Subject<string>();
+  private searchSub?: Subscription;
 
   // Pagination (server-side)
   currentPage = 1;
@@ -25,6 +29,16 @@ export class UserListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadUsers();
+    this.searchSub = this.searchSubject
+      .pipe(debounceTime(350), distinctUntilChanged())
+      .subscribe(() => {
+        this.currentPage = 1;
+        this.loadUsers();
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.searchSub?.unsubscribe();
   }
 
   loadUsers(): void {
@@ -48,8 +62,7 @@ export class UserListComponent implements OnInit {
   }
 
   onSearch(): void {
-    this.currentPage = 1;
-    this.loadUsers();
+    this.searchSubject.next(this.searchTerm);
   }
 
   goToPage(page: number): void {

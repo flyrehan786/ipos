@@ -1,5 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ClientService } from '../../../services/client.service';
 import { Client } from '../../../models/client.model';
 
@@ -7,10 +9,12 @@ import { Client } from '../../../models/client.model';
   selector: 'app-client-list',
   templateUrl: './client-list.component.html'
 })
-export class ClientListComponent implements OnInit {
+export class ClientListComponent implements OnInit, OnDestroy {
   paginatedClients: Client[] = [];
   loading = true;
   searchTerm = '';
+  private searchSubject = new Subject<string>();
+  private searchSub?: Subscription;
 
   // Pagination (server-side)
   currentPage = 1;
@@ -25,6 +29,16 @@ export class ClientListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadClients();
+    this.searchSub = this.searchSubject
+      .pipe(debounceTime(350), distinctUntilChanged())
+      .subscribe(() => {
+        this.currentPage = 1;
+        this.loadClients();
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.searchSub?.unsubscribe();
   }
 
   loadClients(): void {
@@ -48,8 +62,7 @@ export class ClientListComponent implements OnInit {
   }
 
   onSearch(): void {
-    this.currentPage = 1;
-    this.loadClients();
+    this.searchSubject.next(this.searchTerm);
   }
 
   goToPage(page: number): void {

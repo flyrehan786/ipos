@@ -1,4 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { TransactionService } from '../../../services/transaction.service';
 import { Transaction } from '../../../models/transaction.model';
 import { TransactionSummary } from '../../../models/pagination.model';
@@ -7,11 +9,13 @@ import { TransactionSummary } from '../../../models/pagination.model';
   selector: 'app-transaction-list',
   templateUrl: './transaction-list.component.html'
 })
-export class TransactionListComponent implements OnInit {
+export class TransactionListComponent implements OnInit, OnDestroy {
   paginatedTransactions: Transaction[] = [];
   loading = true;
   error = '';
   searchTerm = '';
+  private searchSubject = new Subject<string>();
+  private searchSub?: Subscription;
 
   // Pagination (server-side)
   currentPage = 1;
@@ -26,6 +30,16 @@ export class TransactionListComponent implements OnInit {
   ngOnInit(): void {
     this.loadTransactions();
     this.loadSummary();
+    this.searchSub = this.searchSubject
+      .pipe(debounceTime(350), distinctUntilChanged())
+      .subscribe(() => {
+        this.currentPage = 1;
+        this.loadTransactions();
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.searchSub?.unsubscribe();
   }
 
   loadSummary(): void {
@@ -60,8 +74,7 @@ export class TransactionListComponent implements OnInit {
   }
 
   onSearch(): void {
-    this.currentPage = 1;
-    this.loadTransactions();
+    this.searchSubject.next(this.searchTerm);
   }
 
   goToPage(page: number): void {

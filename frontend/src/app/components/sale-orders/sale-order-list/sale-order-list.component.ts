@@ -1,5 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { SaleOrderService } from '../../../services/sale-order.service';
 import { SaleOrder } from '../../../models/order.model';
 
@@ -7,10 +9,12 @@ import { SaleOrder } from '../../../models/order.model';
   selector: 'app-sale-order-list',
   templateUrl: './sale-order-list.component.html'
 })
-export class SaleOrderListComponent implements OnInit {
+export class SaleOrderListComponent implements OnInit, OnDestroy {
   paginatedOrders: SaleOrder[] = [];
   loading = true;
   searchTerm = '';
+  private searchSubject = new Subject<string>();
+  private searchSub?: Subscription;
 
   // Pagination (server-side)
   currentPage = 1;
@@ -25,6 +29,16 @@ export class SaleOrderListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadOrders();
+    this.searchSub = this.searchSubject
+      .pipe(debounceTime(350), distinctUntilChanged())
+      .subscribe(() => {
+        this.currentPage = 1;
+        this.loadOrders();
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.searchSub?.unsubscribe();
   }
 
   loadOrders(): void {
@@ -48,8 +62,7 @@ export class SaleOrderListComponent implements OnInit {
   }
 
   onSearch(): void {
-    this.currentPage = 1;
-    this.loadOrders();
+    this.searchSubject.next(this.searchTerm);
   }
 
   goToPage(page: number): void {
