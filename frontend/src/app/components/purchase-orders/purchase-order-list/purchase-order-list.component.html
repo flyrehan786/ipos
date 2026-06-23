@@ -76,7 +76,7 @@
             Previous
           </button>
           <span class="text-muted">
-            Page {{ currentPage }} of {{ totalPages }} ({{ filteredOrders.length }} total items)
+            Page {{ currentPage }} of {{ totalPages }} ({{ totalItems }} total items)
           </span>
           <button class="btn btn-outline-primary" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
             Next

@@ -8,16 +8,15 @@ import { User } from '../../../models/user.model';
   templateUrl: './user-list.component.html'
 })
 export class UserListComponent implements OnInit {
-  users: User[] = [];
-  filteredUsers: User[] = [];
   paginatedUsers: User[] = [];
   loading = true;
   searchTerm = '';
-  
-  // Pagination
+
+  // Pagination (server-side)
   currentPage = 1;
   itemsPerPage = 10;
   totalPages = 1;
+  totalItems = 0;
 
   constructor(
     private userService: UserService,
@@ -29,11 +28,17 @@ export class UserListComponent implements OnInit {
   }
 
   loadUsers(): void {
-    this.userService.getAll().subscribe({
-      next: (data) => {
-        this.users = data;
-        this.filteredUsers = data;
-        this.updatePagination();
+    this.loading = true;
+    this.userService.getPaginated(this.currentPage, this.itemsPerPage, this.searchTerm).subscribe({
+      next: (res) => {
+        this.paginatedUsers = res.data;
+        this.totalPages = res.totalPages;
+        this.totalItems = res.total;
+        if (this.currentPage > this.totalPages && this.totalPages >= 1) {
+          this.currentPage = this.totalPages;
+          this.loadUsers();
+          return;
+        }
         this.loading = false;
       },
       error: () => {
@@ -43,31 +48,14 @@ export class UserListComponent implements OnInit {
   }
 
   onSearch(): void {
-    if (!this.searchTerm) {
-      this.filteredUsers = this.users;
-    } else {
-      this.filteredUsers = this.users.filter(user =>
-        user.username.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        user.full_name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        user.role.toLowerCase().includes(this.searchTerm.toLowerCase())
-      );
-    }
     this.currentPage = 1;
-    this.updatePagination();
-  }
-
-  updatePagination(): void {
-    this.totalPages = Math.ceil(this.filteredUsers.length / this.itemsPerPage);
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedUsers = this.filteredUsers.slice(startIndex, endIndex);
+    this.loadUsers();
   }
 
   goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
+    if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
       this.currentPage = page;
-      this.updatePagination();
+      this.loadUsers();
     }
   }
 

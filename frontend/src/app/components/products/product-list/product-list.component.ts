@@ -8,16 +8,15 @@ import { Product } from '../../../models/product.model';
   templateUrl: './product-list.component.html'
 })
 export class ProductListComponent implements OnInit {
-  products: Product[] = [];
-  filteredProducts: Product[] = [];
   paginatedProducts: Product[] = [];
   loading = true;
   searchTerm = '';
-  
-  // Pagination
+
+  // Pagination (server-side)
   currentPage = 1;
   itemsPerPage = 10;
   totalPages = 1;
+  totalItems = 0;
 
   constructor(
     private productService: ProductService,
@@ -29,11 +28,17 @@ export class ProductListComponent implements OnInit {
   }
 
   loadProducts(): void {
-    this.productService.getAll().subscribe({
-      next: (data) => {
-        this.products = data;
-        this.filteredProducts = data;
-        this.updatePagination();
+    this.loading = true;
+    this.productService.getPaginated(this.currentPage, this.itemsPerPage, this.searchTerm).subscribe({
+      next: (res) => {
+        this.paginatedProducts = res.data;
+        this.totalPages = res.totalPages;
+        this.totalItems = res.total;
+        if (this.currentPage > this.totalPages && this.totalPages >= 1) {
+          this.currentPage = this.totalPages;
+          this.loadProducts();
+          return;
+        }
         this.loading = false;
       },
       error: () => {
@@ -43,31 +48,14 @@ export class ProductListComponent implements OnInit {
   }
 
   onSearch(): void {
-    if (!this.searchTerm) {
-      this.filteredProducts = this.products;
-    } else {
-      this.filteredProducts = this.products.filter(product =>
-        product.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        product.sku.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        product.category.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        product.barcode?.includes(this.searchTerm)
-      );
-    }
     this.currentPage = 1;
-    this.updatePagination();
-  }
-
-  updatePagination(): void {
-    this.totalPages = Math.ceil(this.filteredProducts.length / this.itemsPerPage);
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedProducts = this.filteredProducts.slice(startIndex, endIndex);
+    this.loadProducts();
   }
 
   goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
+    if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
       this.currentPage = page;
-      this.updatePagination();
+      this.loadProducts();
     }
   }
 

@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from './guards/auth.guard';
+import { RoleGuard } from './guards/role.guard';
 import { LoginComponent } from './components/login/login.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { ClientListComponent } from './components/clients/client-list/client-list.component';
@@ -34,9 +35,9 @@ const routes: Routes = [
   { path: 'purchase-orders/new', component: PurchaseOrderFormComponent, canActivate: [AuthGuard] },
   { path: 'purchase-orders/edit/:id', component: PurchaseOrderFormComponent, canActivate: [AuthGuard] },
   { path: 'transactions', component: TransactionListComponent, canActivate: [AuthGuard] },
-  { path: 'users', component: UserListComponent, canActivate: [AuthGuard] },
-  { path: 'users/new', component: UserFormComponent, canActivate: [AuthGuard] },
-  { path: 'users/edit/:id', component: UserFormComponent, canActivate: [AuthGuard] },
+  { path: 'users', component: UserListComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
+  { path: 'users/new', component: UserFormComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
+  { path: 'users/edit/:id', component: UserFormComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
   { path: 'change-password', component: ChangePasswordComponent, canActivate: [AuthGuard] }
 ];

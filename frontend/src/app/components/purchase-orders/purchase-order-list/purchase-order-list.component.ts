@@ -8,16 +8,15 @@ import { PurchaseOrder } from '../../../models/order.model';
   templateUrl: './purchase-order-list.component.html'
 })
 export class PurchaseOrderListComponent implements OnInit {
-  orders: PurchaseOrder[] = [];
-  filteredOrders: PurchaseOrder[] = [];
   paginatedOrders: PurchaseOrder[] = [];
   loading = true;
   searchTerm = '';
-  
-  // Pagination
+
+  // Pagination (server-side)
   currentPage = 1;
   itemsPerPage = 10;
   totalPages = 1;
+  totalItems = 0;
 
   constructor(
     private purchaseOrderService: PurchaseOrderService,
@@ -29,11 +28,17 @@ export class PurchaseOrderListComponent implements OnInit {
   }
 
   loadOrders(): void {
-    this.purchaseOrderService.getAll().subscribe({
-      next: (data) => {
-        this.orders = data;
-        this.filteredOrders = data;
-        this.updatePagination();
+    this.loading = true;
+    this.purchaseOrderService.getPaginated(this.currentPage, this.itemsPerPage, this.searchTerm).subscribe({
+      next: (res) => {
+        this.paginatedOrders = res.data;
+        this.totalPages = res.totalPages;
+        this.totalItems = res.total;
+        if (this.currentPage > this.totalPages && this.totalPages >= 1) {
+          this.currentPage = this.totalPages;
+          this.loadOrders();
+          return;
+        }
         this.loading = false;
       },
       error: () => {
@@ -43,31 +48,14 @@ export class PurchaseOrderListComponent implements OnInit {
   }
 
   onSearch(): void {
-    if (!this.searchTerm) {
-      this.filteredOrders = this.orders;
-    } else {
-      this.filteredOrders = this.orders.filter(order =>
-        order.order_number.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        order.supplier_name?.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        order.payment_status.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        order.status.toLowerCase().includes(this.searchTerm.toLowerCase())
-      );
-    }
     this.currentPage = 1;
-    this.updatePagination();
-  }
-
-  updatePagination(): void {
-    this.totalPages = Math.ceil(this.filteredOrders.length / this.itemsPerPage);
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedOrders = this.filteredOrders.slice(startIndex, endIndex);
+    this.loadOrders();
   }
 
   goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
+    if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
       this.currentPage = page;
-      this.updatePagination();
+      this.loadOrders();
     }
   }
 

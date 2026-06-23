@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Transaction } from '../models/transaction.model';
+import { PaginatedResponse, TransactionSummary } from '../models/pagination.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -14,6 +15,16 @@ export class TransactionService {
 
   getAll(): Observable<Transaction[]> {
     return this.http.get<Transaction[]>(this.apiUrl);
+  }
+
+  getPaginated(page: number, limit: number, search: string = ''): Observable<PaginatedResponse<Transaction>> {
+    let params = new HttpParams().set('page', page).set('limit', limit);
+    if (search) { params = params.set('search', search); }
+    return this.http.get<PaginatedResponse<Transaction>>(this.apiUrl, { params });
+  }
+
+  getSummary(): Observable<TransactionSummary> {
+    return this.http.get<TransactionSummary>(`${this.apiUrl}/summary`);
   }
 
   getById(id: number): Observable<Transaction> {

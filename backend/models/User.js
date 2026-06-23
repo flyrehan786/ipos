@@ -34,6 +34,22 @@ class User {
     return rows;
   }
 
+  static async getPaginated({ limit, offset, search }) {
+    let where = '';
+    let params = [];
+    if (search) {
+      where = 'WHERE username LIKE ? OR email LIKE ? OR full_name LIKE ?';
+      const like = `%${search}%`;
+      params = [like, like, like];
+    }
+    const [countRows] = await db.execute(`SELECT COUNT(*) AS total FROM users ${where}`, params);
+    const [rows] = await db.execute(
+      `SELECT id, username, email, full_name, role, status, created_at FROM users ${where} ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+      params
+    );
+    return { data: rows, total: countRows[0].total };
+  }
+
   static async update(id, userData) {
     const [result] = await db.execute(
       'UPDATE users SET username = ?, email = ?, full_name = ?, role = ?, status = ? WHERE id = ?',

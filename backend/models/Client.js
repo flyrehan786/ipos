@@ -19,6 +19,22 @@ class Client {
     return rows;
   }
 
+  static async getPaginated({ limit, offset, search }) {
+    let where = '';
+    let params = [];
+    if (search) {
+      where = 'WHERE name LIKE ? OR email LIKE ? OR phone LIKE ?';
+      const like = `%${search}%`;
+      params = [like, like, like];
+    }
+    const [countRows] = await db.execute(`SELECT COUNT(*) AS total FROM clients ${where}`, params);
+    const [rows] = await db.execute(
+      `SELECT * FROM clients ${where} ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+      params
+    );
+    return { data: rows, total: countRows[0].total };
+  }
+
   static async search(searchTerm) {
     const [rows] = await db.execute(
       'SELECT * FROM clients WHERE name LIKE ? OR email LIKE ? OR phone LIKE ? ORDER BY name',

@@ -1,8 +1,15 @@
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const { getPaginationParams, buildPaginatedResponse } = require('../utils/pagination');
 
 exports.getAllUsers = async (req, res) => {
   try {
+    if (req.query.page !== undefined) {
+      const { page, limit, offset } = getPaginationParams(req.query);
+      const search = req.query.search || req.query.q || '';
+      const { data, total } = await User.getPaginated({ limit, offset, search });
+      return res.json(buildPaginatedResponse({ data, total, page, limit }));
+    }
     const users = await User.getAll();
     res.json(users);
   } catch (error) {

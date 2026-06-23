@@ -1,7 +1,14 @@
 const Client = require('../models/Client');
+const { getPaginationParams, buildPaginatedResponse } = require('../utils/pagination');
 
 exports.getAllClients = async (req, res) => {
   try {
+    if (req.query.page !== undefined) {
+      const { page, limit, offset } = getPaginationParams(req.query);
+      const search = req.query.search || req.query.q || '';
+      const { data, total } = await Client.getPaginated({ limit, offset, search });
+      return res.json(buildPaginatedResponse({ data, total, page, limit }));
+    }
     const clients = await Client.getAll();
     res.json(clients);
   } catch (error) {

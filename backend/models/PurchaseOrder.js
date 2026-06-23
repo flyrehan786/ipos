@@ -64,6 +64,29 @@ class PurchaseOrder {
     return rows;
   }
 
+  static async getPaginated({ limit, offset, search }) {
+    let where = '';
+    let params = [];
+    if (search) {
+      where = 'WHERE po.order_number LIKE ? OR po.supplier_name LIKE ? OR po.status LIKE ? OR po.payment_status LIKE ?';
+      const like = `%${search}%`;
+      params = [like, like, like, like];
+    }
+    const [countRows] = await db.execute(
+      `SELECT COUNT(*) AS total FROM purchase_orders po ${where}`,
+      params
+    );
+    const [rows] = await db.execute(
+      `SELECT po.*, u.full_name as user_name 
+       FROM purchase_orders po 
+       LEFT JOIN users u ON po.user_id = u.id 
+       ${where} 
+       ORDER BY po.created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+      params
+    );
+    return { data: rows, total: countRows[0].total };
+  }
+
   static async getByDateRange(startDate, endDate) {
     const [rows] = await db.execute(
       `SELECT po.*, u.full_name as user_name 

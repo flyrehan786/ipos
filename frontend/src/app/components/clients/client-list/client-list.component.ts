@@ -8,16 +8,15 @@ import { Client } from '../../../models/client.model';
   templateUrl: './client-list.component.html'
 })
 export class ClientListComponent implements OnInit {
-  clients: Client[] = [];
-  filteredClients: Client[] = [];
   paginatedClients: Client[] = [];
   loading = true;
   searchTerm = '';
-  
-  // Pagination
+
+  // Pagination (server-side)
   currentPage = 1;
   itemsPerPage = 10;
   totalPages = 1;
+  totalItems = 0;
 
   constructor(
     private clientService: ClientService,
@@ -29,11 +28,17 @@ export class ClientListComponent implements OnInit {
   }
 
   loadClients(): void {
-    this.clientService.getAll().subscribe({
-      next: (data) => {
-        this.clients = data;
-        this.filteredClients = data;
-        this.updatePagination();
+    this.loading = true;
+    this.clientService.getPaginated(this.currentPage, this.itemsPerPage, this.searchTerm).subscribe({
+      next: (res) => {
+        this.paginatedClients = res.data;
+        this.totalPages = res.totalPages;
+        this.totalItems = res.total;
+        if (this.currentPage > this.totalPages && this.totalPages >= 1) {
+          this.currentPage = this.totalPages;
+          this.loadClients();
+          return;
+        }
         this.loading = false;
       },
       error: () => {
@@ -43,30 +48,14 @@ export class ClientListComponent implements OnInit {
   }
 
   onSearch(): void {
-    if (!this.searchTerm) {
-      this.filteredClients = this.clients;
-    } else {
-      this.filteredClients = this.clients.filter(client =>
-        client.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        client.email?.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        client.phone.includes(this.searchTerm)
-      );
-    }
     this.currentPage = 1;
-    this.updatePagination();
-  }
-
-  updatePagination(): void {
-    this.totalPages = Math.ceil(this.filteredClients.length / this.itemsPerPage);
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedClients = this.filteredClients.slice(startIndex, endIndex);
+    this.loadClients();
   }
 
   goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
+    if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
       this.currentPage = page;
-      this.updatePagination();
+      this.loadClients();
     }
   }
 

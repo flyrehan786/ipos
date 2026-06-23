@@ -29,6 +29,22 @@ class Product {
     return rows;
   }
 
+  static async getPaginated({ limit, offset, search }) {
+    let where = '';
+    let params = [];
+    if (search) {
+      where = 'WHERE name LIKE ? OR sku LIKE ? OR barcode LIKE ? OR category LIKE ?';
+      const like = `%${search}%`;
+      params = [like, like, like, like];
+    }
+    const [countRows] = await db.execute(`SELECT COUNT(*) AS total FROM products ${where}`, params);
+    const [rows] = await db.execute(
+      `SELECT * FROM products ${where} ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+      params
+    );
+    return { data: rows, total: countRows[0].total };
+  }
+
   static async search(searchTerm) {
     const [rows] = await db.execute(
       'SELECT * FROM products WHERE name LIKE ? OR sku LIKE ? OR barcode LIKE ? OR category LIKE ? ORDER BY name',

@@ -66,6 +66,30 @@ class SaleOrder {
     return rows;
   }
 
+  static async getPaginated({ limit, offset, search }) {
+    let where = '';
+    let params = [];
+    if (search) {
+      where = 'WHERE so.order_number LIKE ? OR c.name LIKE ? OR so.status LIKE ? OR so.payment_status LIKE ?';
+      const like = `%${search}%`;
+      params = [like, like, like, like];
+    }
+    const [countRows] = await db.execute(
+      `SELECT COUNT(*) AS total FROM sale_orders so LEFT JOIN clients c ON so.client_id = c.id ${where}`,
+      params
+    );
+    const [rows] = await db.execute(
+      `SELECT so.*, c.name as client_name, u.full_name as user_name 
+       FROM sale_orders so 
+       LEFT JOIN clients c ON so.client_id = c.id 
+       LEFT JOIN users u ON so.user_id = u.id 
+       ${where} 
+       ORDER BY so.created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+      params
+    );
+    return { data: rows, total: countRows[0].total };
+  }
+
   static async getByDateRange(startDate, endDate) {
     const [rows] = await db.execute(
       `SELECT so.*, c.name as client_name, u.full_name as user_name 

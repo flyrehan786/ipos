@@ -1,8 +1,15 @@
 const PurchaseOrder = require('../models/PurchaseOrder');
 const Transaction = require('../models/Transaction');
+const { getPaginationParams, buildPaginatedResponse } = require('../utils/pagination');
 
 exports.getAllPurchaseOrders = async (req, res) => {
   try {
+    if (req.query.page !== undefined) {
+      const { page, limit, offset } = getPaginationParams(req.query);
+      const search = req.query.search || req.query.q || '';
+      const { data, total } = await PurchaseOrder.getPaginated({ limit, offset, search });
+      return res.json(buildPaginatedResponse({ data, total, page, limit }));
+    }
     const orders = await PurchaseOrder.getAll();
     res.json(orders);
   } catch (error) {

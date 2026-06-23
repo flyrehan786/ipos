@@ -1,36 +1,54 @@
 import { Component, OnInit } from '@angular/core';
 import { TransactionService } from '../../../services/transaction.service';
 import { Transaction } from '../../../models/transaction.model';
+import { TransactionSummary } from '../../../models/pagination.model';
 
 @Component({
   selector: 'app-transaction-list',
   templateUrl: './transaction-list.component.html'
 })
 export class TransactionListComponent implements OnInit {
-  transactions: Transaction[] = [];
-  filteredTransactions: Transaction[] = [];
   paginatedTransactions: Transaction[] = [];
   loading = true;
   error = '';
   searchTerm = '';
-  
-  // Pagination
+
+  // Pagination (server-side)
   currentPage = 1;
   itemsPerPage = 10;
   totalPages = 1;
+  totalItems = 0;
+
+  summary: TransactionSummary = { total_income: 0, total_expense: 0, net_balance: 0, total_count: 0 };
 
   constructor(private transactionService: TransactionService) {}
 
   ngOnInit(): void {
     this.loadTransactions();
+    this.loadSummary();
+  }
+
+  loadSummary(): void {
+    this.transactionService.getSummary().subscribe({
+      next: (data) => {
+        this.summary = data;
+      },
+      error: () => {}
+    });
   }
 
   loadTransactions(): void {
-    this.transactionService.getAll().subscribe({
-      next: (data) => {
-        this.transactions = data;
-        this.filteredTransactions = data;
-        this.updatePagination();
+    this.loading = true;
+    this.transactionService.getPaginated(this.currentPage, this.itemsPerPage, this.searchTerm).subscribe({
+      next: (res) => {
+        this.paginatedTransactions = res.data;
+        this.totalPages = res.totalPages;
+        this.totalItems = res.total;
+        if (this.currentPage > this.totalPages && this.totalPages >= 1) {
+          this.currentPage = this.totalPages;
+          this.loadTransactions();
+          return;
+        }
         this.loading = false;
       },
       error: (err) => {
@@ -42,31 +60,14 @@ export class TransactionListComponent implements OnInit {
   }
 
   onSearch(): void {
-    if (!this.searchTerm) {
-      this.filteredTransactions = this.transactions;
-    } else {
-      this.filteredTransactions = this.transactions.filter(transaction =>
-        transaction.transaction_type.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        transaction.payment_method.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        transaction.notes?.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        transaction.reference_type?.toLowerCase().includes(this.searchTerm.toLowerCase())
-      );
-    }
     this.currentPage = 1;
-    this.updatePagination();
-  }
-
-  updatePagination(): void {
-    this.totalPages = Math.ceil(this.filteredTransactions.length / this.itemsPerPage);
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedTransactions = this.filteredTransactions.slice(startIndex, endIndex);
+    this.loadTransactions();
   }
 
   goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
+    if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
       this.currentPage = page;
-      this.updatePagination();
+      this.loadTransactions();
     }
   }
 
@@ -79,24 +80,14 @@ export class TransactionListComponent implements OnInit {
   }
 
   getTotalIncome(): number {
-    if (!this.transactions || this.transactions.length === 0) {
-      return 0;
-    }
-    return this.transactions
-      .filter(t => t.transaction_type === 'income')
-      .reduce((sum, t) => sum + Number(t.amount || 0), 0);
+    return this.summary.total_income;
   }
 
   getTotalExpense(): number {
-    if (!this.transactions || this.transactions.length === 0) {
-      return 0;
-    }
-    return this.transactions
-      .filter(t => t.transaction_type === 'expense')
-      .reduce((sum, t) => sum + Number(t.amount || 0), 0);
+    return this.summary.total_expense;
   }
 
   getNetBalance(): number {
-    return this.getTotalIncome() - this.getTotalExpense();
+    return this.summary.net_balance;
   }
 }

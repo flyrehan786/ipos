@@ -1,7 +1,14 @@
 const Transaction = require('../models/Transaction');
+const { getPaginationParams, buildPaginatedResponse } = require('../utils/pagination');
 
 exports.getAllTransactions = async (req, res) => {
   try {
+    if (req.query.page !== undefined) {
+      const { page, limit, offset } = getPaginationParams(req.query);
+      const search = req.query.search || req.query.q || '';
+      const { data, total } = await Transaction.getPaginated({ limit, offset, search });
+      return res.json(buildPaginatedResponse({ data, total, page, limit }));
+    }
     const transactions = await Transaction.getAll();
     res.json(transactions);
   } catch (error) {
@@ -19,6 +26,16 @@ exports.getTransactionById = async (req, res) => {
     res.json(transaction);
   } catch (error) {
     console.error('Get transaction error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+exports.getSummary = async (req, res) => {
+  try {
+    const summary = await Transaction.getSummary();
+    res.json(summary);
+  } catch (error) {
+    console.error('Get transaction summary error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
