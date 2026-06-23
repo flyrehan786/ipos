@@ -8,6 +8,7 @@ import { AppComponent } from './app.component';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 
 import { LoginComponent } from './components/login/login.component';
+import { RegisterComponent } from './components/register/register.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { ClientListComponent } from './components/clients/client-list/client-list.component';
@@ -30,6 +31,7 @@ import { AuditLogListComponent } from './components/audit-logs/audit-log-list/au
   declarations: [
     AppComponent,
     LoginComponent,
+    RegisterComponent,
     DashboardComponent,
     NavbarComponent,
     ClientListComponent,

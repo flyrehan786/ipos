@@ -12,6 +12,7 @@ export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   loading = false;
   error = '';
+  success = '';
   returnUrl = '';
 
   constructor(
@@ -32,6 +33,10 @@ export class LoginComponent implements OnInit {
     });
 
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+
+    if (this.route.snapshot.queryParams['registered']) {
+      this.success = 'Account created successfully. Please sign in.';
+    }
   }
 
   onSubmit(): void {

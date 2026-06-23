@@ -54,10 +54,20 @@ const registerSchema = {
   role: { type: 'enum', values: ['admin', 'manager', 'cashier'] }
 };
 
+// Public self-service signup: no `role` field — the server always assigns a
+// non-privileged role, so clients cannot escalate by sending one.
+const signupSchema = {
+  username: { required: true, type: 'string', minLength: 3, maxLength: 50 },
+  email: { required: true, type: 'email', maxLength: 100 },
+  password: { required: true, type: 'string', minLength: 6, maxLength: 255 },
+  full_name: { required: true, type: 'string', maxLength: 100 }
+};
+
 module.exports = {
   userCreateSchema,
   userUpdateSchema,
   clientSchema,
   productSchema,
-  registerSchema
+  registerSchema,
+  signupSchema
 };

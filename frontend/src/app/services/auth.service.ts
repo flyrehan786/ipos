@@ -32,6 +32,10 @@ export class AuthService {
     );
   }
 
+  register(payload: { username: string; email: string; password: string; full_name: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/signup`, payload);
+  }
+
   refreshToken(): Observable<RefreshResponse> {
     const refreshToken = this.getRefreshToken();
     return this.http.post<RefreshResponse>(`${this.apiUrl}/refresh`, { refreshToken }).pipe(

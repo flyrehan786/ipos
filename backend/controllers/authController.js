@@ -118,6 +118,45 @@ exports.register = async (req, res) => {
   }
 };
 
+exports.signup = async (req, res) => {
+  try {
+    const { username, email, password, full_name } = req.body;
+
+    if (!username || !email || !password || !full_name) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    const existingUser = await User.findByUsername(username);
+    if (existingUser) {
+      return res.status(400).json({ error: 'Username already exists' });
+    }
+
+    const existingEmail = await User.findByEmail(email);
+    if (existingEmail) {
+      return res.status(400).json({ error: 'Email already exists' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Public signup always creates a non-privileged cashier account; the role
+    // is never read from the request body to prevent privilege escalation.
+    const userId = await User.create({
+      username,
+      email,
+      password: hashedPassword,
+      full_name,
+      role: 'cashier',
+      status: 'active'
+    });
+
+    await recordAudit(req, 'signup', 'user', userId, { username });
+    res.status(201).json({ message: 'Account created successfully', userId });
+  } catch (error) {
+    console.error('Signup error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 exports.getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
