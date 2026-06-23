@@ -10,10 +10,10 @@ exports.getAllUsers = async (req, res) => {
     if (req.query.page !== undefined) {
       const { page, limit, offset } = getPaginationParams(req.query);
       const search = req.query.search || req.query.q || '';
-      const { data, total } = await User.getPaginated({ limit, offset, search });
+      const { data, total } = await User.getPaginated({ limit, offset, search, tenantId: req.user.tenant_id });
       return res.json(buildPaginatedResponse({ data, total, page, limit }));
     }
-    const users = await User.getAll();
+    const users = await User.getAll(req.user.tenant_id);
     res.json(users);
   } catch (error) {
     console.error('Get all users error:', error);
@@ -23,7 +23,7 @@ exports.getAllUsers = async (req, res) => {
 
 exports.getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findByIdInTenant(req.params.id, req.user.tenant_id);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -60,7 +60,8 @@ exports.createUser = async (req, res) => {
       password: hashedPassword,
       full_name,
       role: role || 'cashier',
-      status: status || 'active'
+      status: status || 'active',
+      tenant_id: req.user.tenant_id
     });
 
     await recordAudit(req, 'create', 'user', userId);
@@ -95,7 +96,7 @@ exports.updateUser = async (req, res) => {
       full_name,
       role: role || 'cashier',
       status: status || 'active'
-    });
+    }, req.user.tenant_id);
 
     res.json({ message: 'User updated successfully' });
   } catch (error) {
@@ -110,7 +111,7 @@ exports.deleteUser = async (req, res) => {
       return res.status(400).json({ error: 'Cannot delete your own account' });
     }
 
-    await User.delete(req.params.id);
+    await User.delete(req.params.id, req.user.tenant_id);
     await recordAudit(req, 'delete', 'user', req.params.id);
     res.json({ message: 'User deleted successfully' });
   } catch (error) {
@@ -125,7 +126,7 @@ exports.bulkDeleteUsers = async (req, res) => {
     if (ids.length === 0) {
       return res.status(400).json({ error: 'A non-empty array of valid ids is required (you cannot delete your own account)' });
     }
-    const deleted = await User.bulkDelete(ids);
+    const deleted = await User.bulkDelete(ids, req.user.tenant_id);
     await recordAudit(req, 'bulk-delete', 'user', ids.join(','), { deleted });
     res.json({ message: `${deleted} user(s) deleted successfully`, deleted });
   } catch (error) {
@@ -143,7 +144,7 @@ exports.bulkUpdateUserStatus = async (req, res) => {
     if (!isValidStatus(req.body.status)) {
       return res.status(400).json({ error: 'status must be "active" or "inactive"' });
     }
-    const updated = await User.bulkUpdateStatus(ids, req.body.status);
+    const updated = await User.bulkUpdateStatus(ids, req.body.status, req.user.tenant_id);
     await recordAudit(req, 'bulk-status', 'user', ids.join(','), { status: req.body.status, updated });
     res.json({ message: `${updated} user(s) updated successfully`, updated });
   } catch (error) {

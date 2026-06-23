@@ -4,7 +4,7 @@ const { toCsv } = require('../utils/csv');
 
 exports.exportTransactions = async (req, res) => {
   try {
-    const transactions = await Transaction.getAll();
+    const transactions = await Transaction.getAll(req.user.tenant_id);
     const csv = toCsv(transactions);
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', 'attachment; filename="transactions.csv"');
@@ -20,10 +20,10 @@ exports.getAllTransactions = async (req, res) => {
     if (req.query.page !== undefined) {
       const { page, limit, offset } = getPaginationParams(req.query);
       const search = req.query.search || req.query.q || '';
-      const { data, total } = await Transaction.getPaginated({ limit, offset, search });
+      const { data, total } = await Transaction.getPaginated({ limit, offset, search, tenantId: req.user.tenant_id });
       return res.json(buildPaginatedResponse({ data, total, page, limit }));
     }
-    const transactions = await Transaction.getAll();
+    const transactions = await Transaction.getAll(req.user.tenant_id);
     res.json(transactions);
   } catch (error) {
     console.error('Get all transactions error:', error);
@@ -33,7 +33,7 @@ exports.getAllTransactions = async (req, res) => {
 
 exports.getTransactionById = async (req, res) => {
   try {
-    const transaction = await Transaction.findById(req.params.id);
+    const transaction = await Transaction.findById(req.params.id, req.user.tenant_id);
     if (!transaction) {
       return res.status(404).json({ error: 'Transaction not found' });
     }
@@ -46,7 +46,7 @@ exports.getTransactionById = async (req, res) => {
 
 exports.getSummary = async (req, res) => {
   try {
-    const summary = await Transaction.getSummary();
+    const summary = await Transaction.getSummary(req.user.tenant_id);
     res.json(summary);
   } catch (error) {
     console.error('Get transaction summary error:', error);
@@ -60,7 +60,7 @@ exports.getTransactionsByDateRange = async (req, res) => {
     if (!startDate || !endDate) {
       return res.status(400).json({ error: 'Start date and end date are required' });
     }
-    const transactions = await Transaction.getByDateRange(startDate, endDate);
+    const transactions = await Transaction.getByDateRange(startDate, endDate, req.user.tenant_id);
     res.json(transactions);
   } catch (error) {
     console.error('Get transactions by date range error:', error);
@@ -71,7 +71,7 @@ exports.getTransactionsByDateRange = async (req, res) => {
 exports.getTransactionsByReference = async (req, res) => {
   try {
     const { referenceType, referenceId } = req.params;
-    const transactions = await Transaction.getByReference(referenceType, referenceId);
+    const transactions = await Transaction.getByReference(referenceType, referenceId, req.user.tenant_id);
     res.json(transactions);
   } catch (error) {
     console.error('Get transactions by reference error:', error);
@@ -95,7 +95,8 @@ exports.createTransaction = async (req, res) => {
       payment_method: payment_method || 'cash',
       transaction_date: transaction_date || new Date(),
       notes: notes || null,
-      user_id: req.user.id
+      user_id: req.user.id,
+      tenant_id: req.user.tenant_id
     });
 
     res.status(201).json({ message: 'Transaction created successfully', transactionId });
@@ -107,7 +108,7 @@ exports.createTransaction = async (req, res) => {
 
 exports.deleteTransaction = async (req, res) => {
   try {
-    await Transaction.delete(req.params.id);
+    await Transaction.delete(req.params.id, req.user.tenant_id);
     res.json({ message: 'Transaction deleted successfully' });
   } catch (error) {
     console.error('Delete transaction error:', error);

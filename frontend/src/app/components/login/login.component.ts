@@ -22,7 +22,8 @@ export class LoginComponent implements OnInit {
     private authService: AuthService
   ) {
     if (this.authService.isLoggedIn()) {
-      this.router.navigate(['/dashboard']);
+      const role = this.authService.currentUserValue?.role;
+      this.router.navigate([role === 'super_admin' ? '/super-admin' : '/dashboard']);
     }
   }
 
@@ -49,7 +50,12 @@ export class LoginComponent implements OnInit {
 
     this.authService.login(this.loginForm.value).subscribe({
       next: () => {
-        this.router.navigate([this.returnUrl]);
+        const role = this.authService.currentUserValue?.role;
+        if (role === 'super_admin' && this.returnUrl === '/dashboard') {
+          this.router.navigate(['/super-admin']);
+        } else {
+          this.router.navigate([this.returnUrl]);
+        }
       },
       error: (error) => {
         this.error = error.error?.error || 'Login failed. Please try again.';

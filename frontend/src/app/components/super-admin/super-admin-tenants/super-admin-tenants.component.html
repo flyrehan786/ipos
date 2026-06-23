@@ -1,0 +1,129 @@
+<div class="page-header d-flex justify-content-between align-items-center">
+  <div>
+    <h2>Tenants</h2>
+    <p>Manage organizations on the platform</p>
+  </div>
+  <button class="btn btn-primary" (click)="openCreate()">Add Tenant</button>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span>Tenant List</span>
+  </div>
+  <div class="card-body">
+    <div class="mb-3">
+      <input type="text" class="form-control" placeholder="Search tenants..."
+             [(ngModel)]="searchTerm" (input)="onSearch()">
+    </div>
+
+    <div *ngIf="loading" class="loading-spinner">
+      <div class="spinner-border text-primary" role="status"></div>
+    </div>
+
+    <div *ngIf="!loading" class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Slug</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of tenants">
+            <td>{{ t.id }}</td>
+            <td>{{ t.name }}</td>
+            <td><code>{{ t.slug }}</code></td>
+            <td>
+              <span class="badge" [ngClass]="t.status === 'active' ? 'bg-success' : 'bg-secondary'">
+                {{ t.status }}
+              </span>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-info me-1" (click)="openEdit(t)">Edit</button>
+              <button class="btn btn-sm"
+                      [ngClass]="t.status === 'active' ? 'btn-outline-warning' : 'btn-outline-success'"
+                      (click)="toggleStatus(t)">
+                {{ t.status === 'active' ? 'Deactivate' : 'Activate' }}
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="tenants.length === 0">
+            <td colspan="5" class="text-center">No tenants found</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <nav *ngIf="totalPages > 1" class="mt-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <button class="btn btn-outline-primary" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+            Previous
+          </button>
+          <span class="text-muted">
+            Page {{ currentPage }} of {{ totalPages }} ({{ totalItems }} total items)
+          </span>
+          <button class="btn btn-outline-primary" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+            Next
+          </button>
+        </div>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<!-- Create / Edit modal -->
+<div class="modal d-block" tabindex="-1" *ngIf="showForm" style="background: rgba(0,0,0,0.5);">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ editingId ? 'Edit Tenant' : 'Add Tenant' }}</h5>
+        <button type="button" class="btn-close" (click)="closeForm()"></button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="formError" class="alert alert-danger">{{ formError }}</div>
+
+        <div class="mb-3">
+          <label class="form-label">Organization Name</label>
+          <input type="text" class="form-control" [(ngModel)]="form.name" placeholder="Acme Inc">
+        </div>
+
+        <div class="mb-3" *ngIf="editingId">
+          <label class="form-label">Status</label>
+          <select class="form-select" [(ngModel)]="form.status">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+
+        <div *ngIf="!editingId">
+          <hr>
+          <p class="text-muted small mb-2">Optionally provision an initial admin user for this organization.</p>
+          <div class="mb-2">
+            <label class="form-label">Admin Full Name</label>
+            <input type="text" class="form-control" [(ngModel)]="form.admin_full_name">
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Admin Username</label>
+            <input type="text" class="form-control" [(ngModel)]="form.admin_username">
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Admin Email</label>
+            <input type="email" class="form-control" [(ngModel)]="form.admin_email">
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Admin Password</label>
+            <input type="password" class="form-control" [(ngModel)]="form.admin_password">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving">
+          {{ saving ? 'Saving...' : 'Save' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

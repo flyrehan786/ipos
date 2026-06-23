@@ -1,0 +1,219 @@
+<div class="website">
+  <!-- Top navigation -->
+  <nav class="navbar navbar-expand-lg fixed-top site-navbar">
+    <div class="container">
+      <a class="navbar-brand brand-omnify" href="javascript:void(0)" (click)="scrollTo('hero')">Omnify</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="siteNav">
+        <ul class="navbar-nav ms-auto align-items-lg-center">
+          <li class="nav-item"><a class="nav-link" href="javascript:void(0)" (click)="scrollTo('features')">Features</a></li>
+          <li class="nav-item"><a class="nav-link" href="javascript:void(0)" (click)="scrollTo('about')">About</a></li>
+          <li class="nav-item"><a class="nav-link" href="javascript:void(0)" (click)="scrollTo('contact')">Contact</a></li>
+          <li class="nav-item">
+            <button class="btn btn-link nav-link px-2" (click)="toggleTheme()"
+                    [title]="themeService.isDark ? 'Switch to light mode' : 'Switch to dark mode'">
+              <i class="bi" [ngClass]="themeService.isDark ? 'bi-sun-fill' : 'bi-moon-stars-fill'"></i>
+            </button>
+          </li>
+          <li class="nav-item me-lg-2">
+            <button class="btn btn-outline-primary" (click)="goToLogin()">Sign In</button>
+          </li>
+          <li class="nav-item">
+            <button class="btn btn-primary" (click)="goToRegister()">Get Started</button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header id="hero" class="hero">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-7">
+          <span class="badge rounded-pill hero-badge mb-3">Modern Point of Sale Platform</span>
+          <h1 class="hero-title">Run your business <span class="text-gradient">smarter</span>, not harder.</h1>
+          <p class="hero-subtitle">
+            Omnify brings inventory, sales, purchases, clients and reporting into one elegant,
+            multi-tenant platform — so you spend less time on admin and more time growing.
+          </p>
+          <div class="d-flex flex-wrap gap-2 mt-4">
+            <button class="btn btn-primary btn-lg" (click)="goToRegister()">
+              Start Free <i class="bi bi-arrow-right ms-1"></i>
+            </button>
+            <button class="btn btn-outline-secondary btn-lg" (click)="scrollTo('features')">
+              Explore Features
+            </button>
+          </div>
+          <div class="row g-4 mt-4 hero-stats">
+            <div class="col-4">
+              <div class="stat-number">Multi</div>
+              <div class="stat-label">Tenant Ready</div>
+            </div>
+            <div class="col-4">
+              <div class="stat-number">Real-time</div>
+              <div class="stat-label">Inventory</div>
+            </div>
+            <div class="col-4">
+              <div class="stat-number">Secure</div>
+              <div class="stat-label">Role Access</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-5 d-none d-lg-block">
+          <div class="hero-card">
+            <div class="hero-card-row">
+              <div class="hero-dot bg-primary"></div>
+              <div class="hero-bar w-75"></div>
+            </div>
+            <div class="hero-card-row">
+              <div class="hero-dot bg-success"></div>
+              <div class="hero-bar w-50"></div>
+            </div>
+            <div class="hero-card-row">
+              <div class="hero-dot bg-warning"></div>
+              <div class="hero-bar w-100"></div>
+            </div>
+            <div class="hero-card-chart">
+              <div class="bar" style="height: 40%"></div>
+              <div class="bar" style="height: 70%"></div>
+              <div class="bar" style="height: 55%"></div>
+              <div class="bar" style="height: 90%"></div>
+              <div class="bar" style="height: 65%"></div>
+              <div class="bar" style="height: 80%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Features -->
+  <section id="features" class="section">
+    <div class="container">
+      <div class="text-center mb-5">
+        <h2 class="section-title">Everything you need to run your store</h2>
+        <p class="section-subtitle">A complete toolkit, thoughtfully designed and ready to use.</p>
+      </div>
+      <div class="row g-4">
+        <div class="col-md-6 col-lg-4" *ngFor="let f of features">
+          <div class="feature-card h-100">
+            <div class="feature-icon">
+              <i class="bi" [ngClass]="f.icon"></i>
+            </div>
+            <h5 class="mt-3">{{ f.title }}</h5>
+            <p class="text-muted mb-0">{{ f.text }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section id="about" class="section section-alt">
+    <div class="container">
+      <div class="row align-items-center g-5">
+        <div class="col-lg-6">
+          <h2 class="section-title">Built for growing teams</h2>
+          <p class="section-subtitle mb-4">
+            Whether you run a single shop or manage many organizations, Omnify scales with you.
+            Each tenant keeps its data isolated and secure, while admins stay in full control.
+          </p>
+          <ul class="check-list">
+            <li><i class="bi bi-check-circle-fill text-success me-2"></i>Isolated data per organization</li>
+            <li><i class="bi bi-check-circle-fill text-success me-2"></i>Admin & staff role permissions</li>
+            <li><i class="bi bi-check-circle-fill text-success me-2"></i>Light and dark mode included</li>
+            <li><i class="bi bi-check-circle-fill text-success me-2"></i>Dashboards that update in real time</li>
+          </ul>
+        </div>
+        <div class="col-lg-6">
+          <div class="about-panel">
+            <div class="row g-3">
+              <div class="col-6">
+                <div class="about-tile"><i class="bi bi-graph-up-arrow"></i><span>Grow revenue</span></div>
+              </div>
+              <div class="col-6">
+                <div class="about-tile"><i class="bi bi-clock-history"></i><span>Save time</span></div>
+              </div>
+              <div class="col-6">
+                <div class="about-tile"><i class="bi bi-people-fill"></i><span>Happier teams</span></div>
+              </div>
+              <div class="col-6">
+                <div class="about-tile"><i class="bi bi-lock-fill"></i><span>Stay secure</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section id="contact" class="section">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-8 text-center mb-4">
+          <h2 class="section-title">Get in touch</h2>
+          <p class="section-subtitle">Have a question or want a demo? Send us a message and we'll get back to you.</p>
+        </div>
+      </div>
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="card contact-card">
+            <div class="card-body p-4 p-md-5">
+              <div *ngIf="submitSuccess" class="alert alert-success">{{ submitSuccess }}</div>
+              <div *ngIf="submitError" class="alert alert-danger">{{ submitError }}</div>
+
+              <form (ngSubmit)="submitContact()" #contactForm="ngForm" novalidate>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Name</label>
+                    <input type="text" class="form-control" name="name" [(ngModel)]="contact.name"
+                           placeholder="Your name" required>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" name="email" [(ngModel)]="contact.email"
+                           placeholder="you@example.com" required>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label">Subject</label>
+                    <input type="text" class="form-control" name="subject" [(ngModel)]="contact.subject"
+                           placeholder="How can we help?">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label">Message</label>
+                    <textarea class="form-control" name="message" rows="5" [(ngModel)]="contact.message"
+                              placeholder="Write your message..." required></textarea>
+                  </div>
+                  <div class="col-12 text-end">
+                    <button type="submit" class="btn btn-primary btn-lg" [disabled]="submitting">
+                      {{ submitting ? 'Sending...' : 'Send Message' }}
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+        <span class="brand-omnify fs-5">Omnify</span>
+        <span class="text-muted">&copy; {{ year }} Omnify. All rights reserved.</span>
+        <div class="d-flex gap-3">
+          <a href="javascript:void(0)" class="footer-link" (click)="scrollTo('features')">Features</a>
+          <a href="javascript:void(0)" class="footer-link" (click)="scrollTo('contact')">Contact</a>
+          <a href="javascript:void(0)" class="footer-link" (click)="goToLogin()">Sign In</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>

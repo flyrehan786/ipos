@@ -3,6 +3,7 @@ import { SaleOrderService } from '../../services/sale-order.service';
 import { PurchaseOrderService } from '../../services/purchase-order.service';
 import { ProductService } from '../../services/product.service';
 import { ClientService } from '../../services/client.service';
+import { ThemeService } from '../../services/theme.service';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 
 Chart.register(...registerables);
@@ -44,11 +45,26 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     private saleOrderService: SaleOrderService,
     private purchaseOrderService: PurchaseOrderService,
     private productService: ProductService,
-    private clientService: ClientService
+    private clientService: ClientService,
+    private themeService: ThemeService
   ) {}
 
   ngOnInit(): void {
     this.loadStats();
+    this.themeService.theme$.subscribe(() => {
+      // Recreate charts so axis/grid colors follow the active theme.
+      this.createSalesChart();
+      this.createPurchaseChart();
+    });
+  }
+
+  /** Muted axis/grid colors that stay legible in both light and dark themes. */
+  private getChartTickColor(): string {
+    return this.themeService.isDark ? 'rgba(233, 236, 239, 0.85)' : 'rgba(73, 80, 87, 0.9)';
+  }
+
+  private getChartGridColor(): string {
+    return this.themeService.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)';
   }
 
   ngAfterViewInit(): void {
@@ -178,10 +194,16 @@ export class DashboardComponent implements OnInit, AfterViewInit {
           x: { 
             beginAtZero: true,
             ticks: {
+              color: this.getChartTickColor(),
               callback: function(value) {
                 return value.toLocaleString();
               }
-            }
+            },
+            grid: { color: this.getChartGridColor() }
+          },
+          y: {
+            ticks: { color: this.getChartTickColor() },
+            grid: { color: this.getChartGridColor() }
           }
         }
       }
@@ -263,10 +285,16 @@ export class DashboardComponent implements OnInit, AfterViewInit {
           x: { 
             beginAtZero: true,
             ticks: {
+              color: this.getChartTickColor(),
               callback: function(value) {
                 return value.toLocaleString();
               }
-            }
+            },
+            grid: { color: this.getChartGridColor() }
+          },
+          y: {
+            ticks: { color: this.getChartTickColor() },
+            grid: { color: this.getChartGridColor() }
           }
         }
       }

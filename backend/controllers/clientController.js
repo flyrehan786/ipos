@@ -7,7 +7,7 @@ const { recordAudit } = require('../utils/audit');
 
 exports.exportClients = async (req, res) => {
   try {
-    const clients = await Client.getAll();
+    const clients = await Client.getAll(req.user.tenant_id);
     const csv = toCsv(clients);
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', 'attachment; filename="clients.csv"');
@@ -23,10 +23,10 @@ exports.getAllClients = async (req, res) => {
     if (req.query.page !== undefined) {
       const { page, limit, offset } = getPaginationParams(req.query);
       const search = req.query.search || req.query.q || '';
-      const { data, total } = await Client.getPaginated({ limit, offset, search });
+      const { data, total } = await Client.getPaginated({ limit, offset, search, tenantId: req.user.tenant_id });
       return res.json(buildPaginatedResponse({ data, total, page, limit }));
     }
-    const clients = await Client.getAll();
+    const clients = await Client.getAll(req.user.tenant_id);
     res.json(clients);
   } catch (error) {
     console.error('Get all clients error:', error);
@@ -36,11 +36,11 @@ exports.getAllClients = async (req, res) => {
 
 exports.getClientById = async (req, res) => {
   try {
-    const client = await Client.findById(req.params.id);
+    const client = await Client.findById(req.params.id, req.user.tenant_id);
     if (!client) {
       return res.status(404).json({ error: 'Client not found' });
     }
-    const balance = await Client.getBalance(req.params.id);
+    const balance = await Client.getBalance(req.params.id, req.user.tenant_id);
     res.json({ ...client, balance });
   } catch (error) {
     console.error('Get client error:', error);
@@ -54,7 +54,7 @@ exports.searchClients = async (req, res) => {
     if (!q) {
       return res.status(400).json({ error: 'Search term is required' });
     }
-    const clients = await Client.search(q);
+    const clients = await Client.search(q, req.user.tenant_id);
     res.json(clients);
   } catch (error) {
     console.error('Search clients error:', error);
@@ -79,7 +79,8 @@ exports.createClient = async (req, res) => {
       country: country || null,
       tax_id: tax_id || null,
       credit_limit: credit_limit || 0,
-      status: status || 'active'
+      status: status || 'active',
+      tenant_id: req.user.tenant_id
     });
 
     await recordAudit(req, 'create', 'client', clientId);
@@ -108,7 +109,7 @@ exports.updateClient = async (req, res) => {
       tax_id: tax_id || null,
       credit_limit: credit_limit || 0,
       status: status || 'active'
-    });
+    }, req.user.tenant_id);
 
     res.json({ message: 'Client updated successfully' });
   } catch (error) {
@@ -119,7 +120,7 @@ exports.updateClient = async (req, res) => {
 
 exports.deleteClient = async (req, res) => {
   try {
-    await Client.delete(req.params.id);
+    await Client.delete(req.params.id, req.user.tenant_id);
     await recordAudit(req, 'delete', 'client', req.params.id);
     res.json({ message: 'Client deleted successfully' });
   } catch (error) {
@@ -134,7 +135,7 @@ exports.bulkDeleteClients = async (req, res) => {
     if (ids.length === 0) {
       return res.status(400).json({ error: 'A non-empty array of valid ids is required' });
     }
-    const deleted = await Client.bulkDelete(ids);
+    const deleted = await Client.bulkDelete(ids, req.user.tenant_id);
     await recordAudit(req, 'bulk-delete', 'client', ids.join(','), { deleted });
     res.json({ message: `${deleted} client(s) deleted successfully`, deleted });
   } catch (error) {
@@ -152,7 +153,7 @@ exports.bulkUpdateClientStatus = async (req, res) => {
     if (!isValidStatus(req.body.status)) {
       return res.status(400).json({ error: 'status must be "active" or "inactive"' });
     }
-    const updated = await Client.bulkUpdateStatus(ids, req.body.status);
+    const updated = await Client.bulkUpdateStatus(ids, req.body.status, req.user.tenant_id);
     await recordAudit(req, 'bulk-status', 'client', ids.join(','), { status: req.body.status, updated });
     res.json({ message: `${updated} client(s) updated successfully`, updated });
   } catch (error) {

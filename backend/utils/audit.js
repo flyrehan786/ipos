@@ -18,7 +18,8 @@ async function recordAudit(req, action, entityType = null, entityId = null, deta
       action,
       entity_type: entityType,
       entity_id: entityId == null ? null : String(entityId),
-      details: details == null ? null : (typeof details === 'string' ? details : JSON.stringify(details))
+      details: details == null ? null : (typeof details === 'string' ? details : JSON.stringify(details)),
+      tenant_id: req && req.user ? (req.user.tenant_id ?? null) : null
     });
   } catch (err) {
     console.error('Audit log error:', err);

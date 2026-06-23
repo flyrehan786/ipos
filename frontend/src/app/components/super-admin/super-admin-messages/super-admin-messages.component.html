@@ -1,0 +1,103 @@
+<div class="page-header">
+  <h2>Contact Messages</h2>
+  <p>Messages submitted from the public website</p>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span>Inbox</span>
+  </div>
+  <div class="card-body">
+    <div class="row g-2 mb-3">
+      <div class="col-md-8">
+        <input type="text" class="form-control" placeholder="Search messages..."
+               [(ngModel)]="searchTerm" (input)="onSearch()">
+      </div>
+      <div class="col-md-4">
+        <select class="form-select" [(ngModel)]="statusFilter" (change)="onStatusFilterChange()">
+          <option value="">All Statuses</option>
+          <option value="new">New</option>
+          <option value="read">Read</option>
+          <option value="archived">Archived</option>
+        </select>
+      </div>
+    </div>
+
+    <div *ngIf="loading" class="loading-spinner">
+      <div class="spinner-border text-primary" role="status"></div>
+    </div>
+
+    <div *ngIf="!loading" class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Subject</th>
+            <th>Status</th>
+            <th>Received</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let m of messages">
+            <td>{{ m.id }}</td>
+            <td>{{ m.name }}</td>
+            <td>{{ m.email }}</td>
+            <td>{{ m.subject || '—' }}</td>
+            <td><span class="badge" [ngClass]="statusBadgeClass(m.status)">{{ m.status }}</span></td>
+            <td>{{ m.created_at | date:'medium' }}</td>
+            <td>
+              <button class="btn btn-sm btn-info me-1" (click)="view(m)">View</button>
+              <button *ngIf="m.status !== 'archived'" class="btn btn-sm btn-outline-secondary me-1" (click)="setStatus(m, 'archived')">Archive</button>
+              <button class="btn btn-sm btn-danger" (click)="deleteMessage(m)">Delete</button>
+            </td>
+          </tr>
+          <tr *ngIf="messages.length === 0">
+            <td colspan="7" class="text-center">No messages found</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <nav *ngIf="totalPages > 1" class="mt-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <button class="btn btn-outline-primary" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+            Previous
+          </button>
+          <span class="text-muted">
+            Page {{ currentPage }} of {{ totalPages }} ({{ totalItems }} total items)
+          </span>
+          <button class="btn btn-outline-primary" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+            Next
+          </button>
+        </div>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<!-- View message modal -->
+<div class="modal d-block" tabindex="-1" *ngIf="selectedMessage" style="background: rgba(0,0,0,0.5);">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ selectedMessage.subject || 'Message' }}</h5>
+        <button type="button" class="btn-close" (click)="closeView()"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-1"><strong>From:</strong> {{ selectedMessage.name }} &lt;{{ selectedMessage.email }}&gt;</p>
+        <p class="mb-1"><strong>Received:</strong> {{ selectedMessage.created_at | date:'medium' }}</p>
+        <p class="mb-1"><strong>Status:</strong>
+          <span class="badge" [ngClass]="statusBadgeClass(selectedMessage.status)">{{ selectedMessage.status }}</span>
+        </p>
+        <hr>
+        <p style="white-space: pre-wrap;">{{ selectedMessage.message }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" (click)="setStatus(selectedMessage, 'archived')">Archive</button>
+        <button type="button" class="btn btn-secondary" (click)="closeView()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,15 @@
+/* Mirror the tenant dashboard's flat surface stat cards and chart sizing. */
+.stat-card {
+  background: var(--bs-card-bg);
+  border: 1px solid var(--bs-border-color);
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.stat-card h4 {
+  font-weight: 700;
+}
+
+.chart-canvas-wrap {
+  height: 260px;
+}

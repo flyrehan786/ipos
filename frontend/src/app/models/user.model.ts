@@ -4,8 +4,10 @@ export interface User {
   email: string;
   password?: string;
   full_name: string;
-  role: 'admin' | 'manager' | 'cashier';
+  role: 'super_admin' | 'admin' | 'manager' | 'cashier';
   status: 'active' | 'inactive';
+  tenant_id?: number | null;
+  tenant_name?: string;
   created_at?: Date;
 }
 

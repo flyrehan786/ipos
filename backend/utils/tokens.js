@@ -14,7 +14,14 @@ function getRefreshSecret() {
 
 function generateAccessToken(user) {
   return jwt.sign(
-    { id: user.id, username: user.username, role: user.role, type: 'access' },
+    {
+      id: user.id,
+      username: user.username,
+      role: user.role,
+      tenant_id: user.tenant_id != null ? user.tenant_id : null,
+      is_super_admin: user.role === 'super_admin',
+      type: 'access'
+    },
     process.env.JWT_SECRET,
     { expiresIn: ACCESS_TOKEN_EXPIRY }
   );

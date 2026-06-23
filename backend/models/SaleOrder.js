@@ -7,8 +7,8 @@ class SaleOrder {
       await connection.beginTransaction();
 
       const [result] = await connection.execute(
-        'INSERT INTO sale_orders (order_number, client_id, user_id, order_date, subtotal, discount_type, discount_value, tax_rate, tax_amount, total_amount, paid_amount, payment_status, status, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        [orderData.order_number, orderData.client_id, orderData.user_id, orderData.order_date, orderData.subtotal, orderData.discount_type, orderData.discount_value, orderData.tax_rate, orderData.tax_amount, orderData.total_amount, orderData.paid_amount, orderData.payment_status, orderData.status, orderData.notes]
+        'INSERT INTO sale_orders (order_number, client_id, user_id, order_date, subtotal, discount_type, discount_value, tax_rate, tax_amount, total_amount, paid_amount, payment_status, status, notes, tenant_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [orderData.order_number, orderData.client_id, orderData.user_id, orderData.order_date, orderData.subtotal, orderData.discount_type, orderData.discount_value, orderData.tax_rate, orderData.tax_amount, orderData.total_amount, orderData.paid_amount, orderData.payment_status, orderData.status, orderData.notes, orderData.tenant_id]
       );
 
       const orderId = result.insertId;
@@ -32,14 +32,14 @@ class SaleOrder {
     }
   }
 
-  static async findById(id) {
+  static async findById(id, tenantId) {
     const [orders] = await db.execute(
       `SELECT so.*, c.name as client_name, u.full_name as user_name 
        FROM sale_orders so 
        LEFT JOIN clients c ON so.client_id = c.id 
        LEFT JOIN users u ON so.user_id = u.id 
-       WHERE so.id = ?`,
-      [id]
+       WHERE so.id = ? AND so.tenant_id = ?`,
+      [id, tenantId]
     );
 
     if (orders.length === 0) return null;
@@ -55,24 +55,26 @@ class SaleOrder {
     return { ...orders[0], items };
   }
 
-  static async getAll() {
+  static async getAll(tenantId) {
     const [rows] = await db.execute(
       `SELECT so.*, c.name as client_name, u.full_name as user_name 
        FROM sale_orders so 
        LEFT JOIN clients c ON so.client_id = c.id 
        LEFT JOIN users u ON so.user_id = u.id 
-       ORDER BY so.created_at DESC`
+       WHERE so.tenant_id = ? 
+       ORDER BY so.created_at DESC`,
+      [tenantId]
     );
     return rows;
   }
 
-  static async getPaginated({ limit, offset, search }) {
-    let where = '';
-    let params = [];
+  static async getPaginated({ limit, offset, search, tenantId }) {
+    let where = 'WHERE so.tenant_id = ?';
+    const params = [tenantId];
     if (search) {
-      where = 'WHERE so.order_number LIKE ? OR c.name LIKE ? OR so.status LIKE ? OR so.payment_status LIKE ?';
+      where += ' AND (so.order_number LIKE ? OR c.name LIKE ? OR so.status LIKE ? OR so.payment_status LIKE ?)';
       const like = `%${search}%`;
-      params = [like, like, like, like];
+      params.push(like, like, like, like);
     }
     const [countRows] = await db.execute(
       `SELECT COUNT(*) AS total FROM sale_orders so LEFT JOIN clients c ON so.client_id = c.id ${where}`,
@@ -90,39 +92,45 @@ class SaleOrder {
     return { data: rows, total: countRows[0].total };
   }
 
-  static async getByDateRange(startDate, endDate) {
+  static async getByDateRange(startDate, endDate, tenantId) {
     const [rows] = await db.execute(
       `SELECT so.*, c.name as client_name, u.full_name as user_name 
        FROM sale_orders so 
        LEFT JOIN clients c ON so.client_id = c.id 
        LEFT JOIN users u ON so.user_id = u.id 
-       WHERE so.order_date BETWEEN ? AND ? 
+       WHERE so.tenant_id = ? AND so.order_date BETWEEN ? AND ? 
        ORDER BY so.order_date DESC`,
-      [startDate, endDate]
+      [tenantId, startDate, endDate]
     );
     return rows;
   }
 
-  static async update(id, orderData) {
+  static async update(id, orderData, tenantId) {
     const [result] = await db.execute(
-      'UPDATE sale_orders SET client_id = ?, order_date = ?, subtotal = ?, discount_type = ?, discount_value = ?, tax_rate = ?, tax_amount = ?, total_amount = ?, paid_amount = ?, payment_status = ?, status = ?, notes = ? WHERE id = ?',
-      [orderData.client_id, orderData.order_date, orderData.subtotal, orderData.discount_type, orderData.discount_value, orderData.tax_rate, orderData.tax_amount, orderData.total_amount, orderData.paid_amount, orderData.payment_status, orderData.status, orderData.notes, id]
+      'UPDATE sale_orders SET client_id = ?, order_date = ?, subtotal = ?, discount_type = ?, discount_value = ?, tax_rate = ?, tax_amount = ?, total_amount = ?, paid_amount = ?, payment_status = ?, status = ?, notes = ? WHERE id = ? AND tenant_id = ?',
+      [orderData.client_id, orderData.order_date, orderData.subtotal, orderData.discount_type, orderData.discount_value, orderData.tax_rate, orderData.tax_amount, orderData.total_amount, orderData.paid_amount, orderData.payment_status, orderData.status, orderData.notes, id, tenantId]
     );
     return result.affectedRows;
   }
 
-  static async updatePayment(id, paidAmount, paymentStatus) {
+  static async updatePayment(id, paidAmount, paymentStatus, tenantId) {
     const [result] = await db.execute(
-      'UPDATE sale_orders SET paid_amount = ?, payment_status = ? WHERE id = ?',
-      [paidAmount, paymentStatus, id]
+      'UPDATE sale_orders SET paid_amount = ?, payment_status = ? WHERE id = ? AND tenant_id = ?',
+      [paidAmount, paymentStatus, id, tenantId]
     );
     return result.affectedRows;
   }
 
-  static async delete(id) {
+  static async delete(id, tenantId) {
     const connection = await db.getConnection();
     try {
       await connection.beginTransaction();
+
+      const [owner] = await connection.execute('SELECT id FROM sale_orders WHERE id = ? AND tenant_id = ?', [id, tenantId]);
+      if (owner.length === 0) {
+        await connection.rollback();
+        return false;
+      }
 
       const [items] = await connection.execute('SELECT product_id, quantity FROM sale_order_items WHERE sale_order_id = ?', [id]);
 
@@ -131,7 +139,7 @@ class SaleOrder {
       }
 
       await connection.execute('DELETE FROM sale_order_items WHERE sale_order_id = ?', [id]);
-      await connection.execute('DELETE FROM sale_orders WHERE id = ?', [id]);
+      await connection.execute('DELETE FROM sale_orders WHERE id = ? AND tenant_id = ?', [id, tenantId]);
 
       await connection.commit();
       return true;
@@ -143,12 +151,12 @@ class SaleOrder {
     }
   }
 
-  static async bulkUpdateStatus(ids, status) {
+  static async bulkUpdateStatus(ids, status, tenantId) {
     if (!Array.isArray(ids) || ids.length === 0) {
       return 0;
     }
     const placeholders = ids.map(() => '?').join(',');
-    const [result] = await db.execute(`UPDATE sale_orders SET status = ? WHERE id IN (${placeholders})`, [status, ...ids]);
+    const [result] = await db.execute(`UPDATE sale_orders SET status = ? WHERE id IN (${placeholders}) AND tenant_id = ?`, [status, ...ids, tenantId]);
     return result.affectedRows;
   }
 }

@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const Tenant = require('../models/Tenant');
 const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = require('../utils/tokens');
 const { recordAudit } = require('../utils/audit');
 
@@ -21,6 +22,15 @@ exports.login = async (req, res) => {
       return res.status(403).json({ error: 'Account is inactive' });
     }
 
+    // Block sign-in for users whose organization has been deactivated by a
+    // super-admin. Super-admins (tenant_id NULL) are exempt.
+    if (user.tenant_id != null) {
+      const tenant = await Tenant.findById(user.tenant_id);
+      if (!tenant || tenant.status !== 'active') {
+        return res.status(403).json({ error: 'Organization is inactive' });
+      }
+    }
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
@@ -30,7 +40,7 @@ exports.login = async (req, res) => {
     const token = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
-    req.user = { id: user.id, username: user.username };
+    req.user = { id: user.id, username: user.username, tenant_id: user.tenant_id };
     await recordAudit(req, 'login', 'user', user.id);
 
     res.json({
@@ -41,7 +51,8 @@ exports.login = async (req, res) => {
         username: user.username,
         email: user.email,
         full_name: user.full_name,
-        role: user.role
+        role: user.role,
+        tenant_id: user.tenant_id
       }
     });
   } catch (error) {
@@ -108,7 +119,8 @@ exports.register = async (req, res) => {
       password: hashedPassword,
       full_name,
       role: role || 'cashier',
-      status: 'active'
+      status: 'active',
+      tenant_id: req.user.tenant_id
     });
 
     res.status(201).json({ message: 'User created successfully', userId });
@@ -120,7 +132,7 @@ exports.register = async (req, res) => {
 
 exports.signup = async (req, res) => {
   try {
-    const { username, email, password, full_name } = req.body;
+    const { username, email, password, full_name, organization_name } = req.body;
 
     if (!username || !email || !password || !full_name) {
       return res.status(400).json({ error: 'All fields are required' });
@@ -138,18 +150,25 @@ exports.signup = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Public signup always creates a non-privileged cashier account; the role
-    // is never read from the request body to prevent privilege escalation.
+    // Public signup provisions a brand-new organization and makes the signer
+    // its administrator. The role is assigned server-side (never from the body)
+    // to prevent privilege escalation.
+    const tenantName = (organization_name && organization_name.trim()) || `${full_name}'s Organization`;
+    const slug = await Tenant.generateUniqueSlug(tenantName);
+    const tenantId = await Tenant.create({ name: tenantName, slug, status: 'active' });
+
     const userId = await User.create({
       username,
       email,
       password: hashedPassword,
       full_name,
-      role: 'cashier',
-      status: 'active'
+      role: 'admin',
+      status: 'active',
+      tenant_id: tenantId
     });
 
-    await recordAudit(req, 'signup', 'user', userId, { username });
+    req.user = { id: userId, username, tenant_id: tenantId };
+    await recordAudit(req, 'signup', 'user', userId, { username, tenantId });
     res.status(201).json({ message: 'Account created successfully', userId });
   } catch (error) {
     console.error('Signup error:', error);

@@ -1,0 +1,208 @@
+.website {
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+}
+
+/* Navbar */
+.site-navbar {
+  background-color: color-mix(in srgb, var(--bs-body-bg) 85%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--bs-border-color);
+}
+.brand-omnify {
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  background: linear-gradient(90deg, #4f7cff, #8a5cff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.site-navbar .nav-link {
+  color: var(--bs-secondary-color);
+  font-weight: 500;
+}
+.site-navbar .nav-link:hover {
+  color: var(--bs-emphasis-color);
+}
+
+/* Hero */
+.hero {
+  padding: 9rem 0 5rem;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(900px 400px at 80% -10%, rgba(138, 92, 255, 0.18), transparent),
+    radial-gradient(700px 400px at 0% 10%, rgba(79, 124, 255, 0.16), transparent);
+}
+.hero-badge {
+  background-color: color-mix(in srgb, var(--bs-primary) 15%, transparent);
+  color: var(--bs-primary);
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+}
+.hero-title {
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -1px;
+  color: var(--bs-emphasis-color);
+}
+.text-gradient {
+  background: linear-gradient(90deg, #4f7cff, #8a5cff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero-subtitle {
+  font-size: 1.15rem;
+  color: var(--bs-secondary-color);
+  max-width: 38rem;
+  margin-top: 1rem;
+}
+.hero-stats .stat-number {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--bs-emphasis-color);
+}
+.hero-stats .stat-label {
+  font-size: 0.85rem;
+  color: var(--bs-secondary-color);
+}
+
+/* Hero card mock */
+.hero-card {
+  background-color: var(--bs-card-bg, var(--bs-body-bg));
+  border: 1px solid var(--bs-border-color);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.35);
+}
+.hero-card-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.hero-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex: none;
+}
+.hero-bar {
+  height: 10px;
+  border-radius: 6px;
+  background-color: var(--bs-border-color);
+}
+.hero-card-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.6rem;
+  height: 130px;
+  margin-top: 1.5rem;
+}
+.hero-card-chart .bar {
+  flex: 1;
+  border-radius: 6px 6px 0 0;
+  background: linear-gradient(180deg, #4f7cff, #8a5cff);
+  opacity: 0.85;
+}
+
+/* Sections */
+.section {
+  padding: 5rem 0;
+}
+.section-alt {
+  background-color: var(--bs-tertiary-bg);
+}
+.section-title {
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--bs-emphasis-color);
+}
+.section-subtitle {
+  color: var(--bs-secondary-color);
+  font-size: 1.05rem;
+}
+
+/* Feature cards */
+.feature-card {
+  background-color: var(--bs-card-bg, var(--bs-body-bg));
+  border: 1px solid var(--bs-border-color);
+  border-radius: 1rem;
+  padding: 1.75rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.3);
+}
+.feature-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  font-size: 1.4rem;
+  color: var(--bs-primary);
+  background-color: color-mix(in srgb, var(--bs-primary) 14%, transparent);
+}
+
+/* About */
+.check-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 1.05rem;
+}
+.check-list li {
+  padding: 0.4rem 0;
+  color: var(--bs-body-color);
+}
+.about-panel {
+  background-color: var(--bs-card-bg, var(--bs-body-bg));
+  border: 1px solid var(--bs-border-color);
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+.about-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 1.5rem 1rem;
+  border-radius: 0.75rem;
+  background-color: var(--bs-tertiary-bg);
+  font-weight: 600;
+  color: var(--bs-emphasis-color);
+}
+.about-tile i {
+  font-size: 1.6rem;
+  color: var(--bs-primary);
+}
+
+/* Contact */
+.contact-card {
+  border: 1px solid var(--bs-border-color);
+  border-radius: 1rem;
+  background-color: var(--bs-card-bg, var(--bs-body-bg));
+  box-shadow: 0 20px 50px -25px rgba(0, 0, 0, 0.3);
+}
+
+/* Footer */
+.site-footer {
+  padding: 2rem 0;
+  border-top: 1px solid var(--bs-border-color);
+  background-color: var(--bs-tertiary-bg);
+}
+.footer-link {
+  color: var(--bs-secondary-color);
+  text-decoration: none;
+  font-weight: 500;
+}
+.footer-link:hover {
+  color: var(--bs-primary);
+}

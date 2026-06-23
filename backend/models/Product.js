@@ -3,39 +3,39 @@ const db = require('../config/database');
 class Product {
   static async create(productData) {
     const [result] = await db.execute(
-      'INSERT INTO products (name, sku, barcode, description, category, unit, purchase_price, sale_price, stock_quantity, min_stock_level, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [productData.name, productData.sku, productData.barcode, productData.description, productData.category, productData.unit, productData.purchase_price, productData.sale_price, productData.stock_quantity, productData.min_stock_level, productData.status]
+      'INSERT INTO products (name, sku, barcode, description, category, unit, purchase_price, sale_price, stock_quantity, min_stock_level, status, tenant_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [productData.name, productData.sku, productData.barcode, productData.description, productData.category, productData.unit, productData.purchase_price, productData.sale_price, productData.stock_quantity, productData.min_stock_level, productData.status, productData.tenant_id]
     );
     return result.insertId;
   }
 
-  static async findById(id) {
-    const [rows] = await db.execute('SELECT * FROM products WHERE id = ?', [id]);
+  static async findById(id, tenantId) {
+    const [rows] = await db.execute('SELECT * FROM products WHERE id = ? AND tenant_id = ?', [id, tenantId]);
     return rows[0];
   }
 
-  static async findByBarcode(barcode) {
-    const [rows] = await db.execute('SELECT * FROM products WHERE barcode = ? AND status = "active"', [barcode]);
+  static async findByBarcode(barcode, tenantId) {
+    const [rows] = await db.execute('SELECT * FROM products WHERE barcode = ? AND tenant_id = ? AND status = "active"', [barcode, tenantId]);
     return rows[0];
   }
 
-  static async findBySku(sku) {
-    const [rows] = await db.execute('SELECT * FROM products WHERE sku = ?', [sku]);
+  static async findBySku(sku, tenantId) {
+    const [rows] = await db.execute('SELECT * FROM products WHERE sku = ? AND tenant_id = ?', [sku, tenantId]);
     return rows[0];
   }
 
-  static async getAll() {
-    const [rows] = await db.execute('SELECT * FROM products ORDER BY created_at DESC');
+  static async getAll(tenantId) {
+    const [rows] = await db.execute('SELECT * FROM products WHERE tenant_id = ? ORDER BY created_at DESC', [tenantId]);
     return rows;
   }
 
-  static async getPaginated({ limit, offset, search }) {
-    let where = '';
-    let params = [];
+  static async getPaginated({ limit, offset, search, tenantId }) {
+    let where = 'WHERE tenant_id = ?';
+    const params = [tenantId];
     if (search) {
-      where = 'WHERE name LIKE ? OR sku LIKE ? OR barcode LIKE ? OR category LIKE ?';
+      where += ' AND (name LIKE ? OR sku LIKE ? OR barcode LIKE ? OR category LIKE ?)';
       const like = `%${search}%`;
-      params = [like, like, like, like];
+      params.push(like, like, like, like);
     }
     const [countRows] = await db.execute(`SELECT COUNT(*) AS total FROM products ${where}`, params);
     const [rows] = await db.execute(
@@ -45,23 +45,23 @@ class Product {
     return { data: rows, total: countRows[0].total };
   }
 
-  static async search(searchTerm) {
+  static async search(searchTerm, tenantId) {
     const [rows] = await db.execute(
-      'SELECT * FROM products WHERE name LIKE ? OR sku LIKE ? OR barcode LIKE ? OR category LIKE ? ORDER BY name',
-      [`%${searchTerm}%`, `%${searchTerm}%`, `%${searchTerm}%`, `%${searchTerm}%`]
+      'SELECT * FROM products WHERE tenant_id = ? AND (name LIKE ? OR sku LIKE ? OR barcode LIKE ? OR category LIKE ?) ORDER BY name',
+      [tenantId, `%${searchTerm}%`, `%${searchTerm}%`, `%${searchTerm}%`, `%${searchTerm}%`]
     );
     return rows;
   }
 
-  static async getLowStock() {
-    const [rows] = await db.execute('SELECT * FROM products WHERE stock_quantity <= min_stock_level AND status = "active" ORDER BY stock_quantity');
+  static async getLowStock(tenantId) {
+    const [rows] = await db.execute('SELECT * FROM products WHERE tenant_id = ? AND stock_quantity <= min_stock_level AND status = "active" ORDER BY stock_quantity', [tenantId]);
     return rows;
   }
 
-  static async update(id, productData) {
+  static async update(id, productData, tenantId) {
     const [result] = await db.execute(
-      'UPDATE products SET name = ?, sku = ?, barcode = ?, description = ?, category = ?, unit = ?, purchase_price = ?, sale_price = ?, stock_quantity = ?, min_stock_level = ?, status = ? WHERE id = ?',
-      [productData.name, productData.sku, productData.barcode, productData.description, productData.category, productData.unit, productData.purchase_price, productData.sale_price, productData.stock_quantity, productData.min_stock_level, productData.status, id]
+      'UPDATE products SET name = ?, sku = ?, barcode = ?, description = ?, category = ?, unit = ?, purchase_price = ?, sale_price = ?, stock_quantity = ?, min_stock_level = ?, status = ? WHERE id = ? AND tenant_id = ?',
+      [productData.name, productData.sku, productData.barcode, productData.description, productData.category, productData.unit, productData.purchase_price, productData.sale_price, productData.stock_quantity, productData.min_stock_level, productData.status, id, tenantId]
     );
     return result.affectedRows;
   }
@@ -71,26 +71,26 @@ class Product {
     return result.affectedRows;
   }
 
-  static async delete(id) {
-    const [result] = await db.execute('DELETE FROM products WHERE id = ?', [id]);
+  static async delete(id, tenantId) {
+    const [result] = await db.execute('DELETE FROM products WHERE id = ? AND tenant_id = ?', [id, tenantId]);
     return result.affectedRows;
   }
 
-  static async bulkDelete(ids) {
+  static async bulkDelete(ids, tenantId) {
     if (!Array.isArray(ids) || ids.length === 0) {
       return 0;
     }
     const placeholders = ids.map(() => '?').join(',');
-    const [result] = await db.execute(`DELETE FROM products WHERE id IN (${placeholders})`, ids);
+    const [result] = await db.execute(`DELETE FROM products WHERE id IN (${placeholders}) AND tenant_id = ?`, [...ids, tenantId]);
     return result.affectedRows;
   }
 
-  static async bulkUpdateStatus(ids, status) {
+  static async bulkUpdateStatus(ids, status, tenantId) {
     if (!Array.isArray(ids) || ids.length === 0) {
       return 0;
     }
     const placeholders = ids.map(() => '?').join(',');
-    const [result] = await db.execute(`UPDATE products SET status = ? WHERE id IN (${placeholders})`, [status, ...ids]);
+    const [result] = await db.execute(`UPDATE products SET status = ? WHERE id IN (${placeholders}) AND tenant_id = ?`, [status, ...ids, tenantId]);
     return result.affectedRows;
   }
 }

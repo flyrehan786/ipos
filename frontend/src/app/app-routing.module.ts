@@ -19,11 +19,17 @@ import { UserFormComponent } from './components/users/user-form/user-form.compon
 import { ProfileComponent } from './components/profile/profile.component';
 import { ChangePasswordComponent } from './components/change-password/change-password.component';
 import { AuditLogListComponent } from './components/audit-logs/audit-log-list/audit-log-list.component';
+import { SuperAdminDashboardComponent } from './components/super-admin/super-admin-dashboard/super-admin-dashboard.component';
+import { SuperAdminTenantsComponent } from './components/super-admin/super-admin-tenants/super-admin-tenants.component';
+import { SuperAdminUsersComponent } from './components/super-admin/super-admin-users/super-admin-users.component';
+import { SuperAdminMessagesComponent } from './components/super-admin/super-admin-messages/super-admin-messages.component';
+import { WebsiteComponent } from './components/website/website.component';
 
 const routes: Routes = [
+  { path: '', component: WebsiteComponent },
+  { path: 'website', component: WebsiteComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
-  { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
   { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
   { path: 'clients', component: ClientListComponent, canActivate: [AuthGuard] },
   { path: 'clients/new', component: ClientFormComponent, canActivate: [AuthGuard] },
@@ -43,7 +49,11 @@ const routes: Routes = [
   { path: 'users/edit/:id', component: UserFormComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
   { path: 'audit-logs', component: AuditLogListComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
-  { path: 'change-password', component: ChangePasswordComponent, canActivate: [AuthGuard] }
+  { path: 'change-password', component: ChangePasswordComponent, canActivate: [AuthGuard] },
+  { path: 'super-admin', component: SuperAdminDashboardComponent, canActivate: [RoleGuard], data: { roles: ['super_admin'] } },
+  { path: 'super-admin/tenants', component: SuperAdminTenantsComponent, canActivate: [RoleGuard], data: { roles: ['super_admin'] } },
+  { path: 'super-admin/users', component: SuperAdminUsersComponent, canActivate: [RoleGuard], data: { roles: ['super_admin'] } },
+  { path: 'super-admin/messages', component: SuperAdminMessagesComponent, canActivate: [RoleGuard], data: { roles: ['super_admin'] } }
 ];
 
 @NgModule({

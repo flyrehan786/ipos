@@ -1,0 +1,138 @@
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+  <div>
+    <h2>Platform Overview</h2>
+    <p>Cross-tenant statistics and activity</p>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <label class="form-label mb-0 text-nowrap">Filter by tenant</label>
+    <select class="form-select" [(ngModel)]="selectedTenantId" (change)="onTenantFilterChange()">
+      <option [ngValue]="null">All Tenants</option>
+      <option *ngFor="let t of tenants" [ngValue]="t.id">{{ t.name }}</option>
+    </select>
+  </div>
+</div>
+
+<div *ngIf="loading" class="loading-spinner">
+  <div class="spinner-border text-primary" role="status"></div>
+</div>
+
+<div *ngIf="!loading && stats">
+  <!-- Summary tiles -->
+  <div class="row g-3 mb-2">
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <h4 class="mb-0">{{ stats.tenants.total }}</h4>
+        <p class="mb-0 text-muted">Tenants ({{ stats.tenants.active }} active)</p>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <h4 class="mb-0">{{ stats.users }}</h4>
+        <p class="mb-0 text-muted">Users</p>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <h4 class="mb-0">{{ stats.products }}</h4>
+        <p class="mb-0 text-muted">Products</p>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <h4 class="mb-0">{{ stats.clients }}</h4>
+        <p class="mb-0 text-muted">Clients</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <h4 class="mb-0">{{ stats.saleOrders.count }}</h4>
+        <p class="mb-0 text-muted">Sale Orders</p>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <h4 class="mb-0">{{ stats.purchaseOrders.count }}</h4>
+        <p class="mb-0 text-muted">Purchase Orders</p>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <h4 class="mb-0">{{ stats.transactions.net | number:'1.2-2' }}</h4>
+        <p class="mb-0 text-muted">Net Balance</p>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <h4 class="mb-0">{{ stats.newMessages }}</h4>
+        <p class="mb-0 text-muted">New Messages</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="row g-3">
+    <div class="col-12 col-lg-6">
+      <div class="card h-100">
+        <div class="card-header">Revenue by Tenant</div>
+        <div class="card-body">
+          <div class="chart-canvas-wrap">
+            <canvas id="superAdminRevenueChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-lg-6">
+      <div class="card h-100">
+        <div class="card-header">Spend by Tenant</div>
+        <div class="card-body">
+          <div class="chart-canvas-wrap">
+            <canvas id="superAdminSpendChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Per-tenant breakdown table -->
+  <div class="card mt-3">
+    <div class="card-header">Tenant Breakdown</div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Tenant</th>
+              <th>Status</th>
+              <th class="text-end">Users</th>
+              <th class="text-end">Products</th>
+              <th class="text-end">Clients</th>
+              <th class="text-end">Revenue</th>
+              <th class="text-end">Spend</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let t of stats.perTenant">
+              <td>{{ t.name }}</td>
+              <td>
+                <span class="badge" [ngClass]="t.status === 'active' ? 'bg-success' : 'bg-secondary'">
+                  {{ t.status }}
+                </span>
+              </td>
+              <td class="text-end">{{ t.users }}</td>
+              <td class="text-end">{{ t.products }}</td>
+              <td class="text-end">{{ t.clients }}</td>
+              <td class="text-end">{{ t.revenue | number:'1.2-2' }}</td>
+              <td class="text-end">{{ t.spend | number:'1.2-2' }}</td>
+            </tr>
+            <tr *ngIf="stats.perTenant.length === 0">
+              <td colspan="7" class="text-center">No tenants found</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,13 +1,35 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<nav class="navbar navbar-expand-lg bg-body-tertiary">
   <div class="container-fluid">
-    <a class="navbar-brand brand-omnify" routerLink="/dashboard">
+    <a class="navbar-brand brand-omnify" [routerLink]="isSuperAdmin ? '/super-admin' : '/dashboard'">
       Omnify
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav me-auto">
+      <ul class="navbar-nav me-auto" *ngIf="isSuperAdmin">
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/super-admin" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+            Overview
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/super-admin/tenants" routerLinkActive="active">
+            Tenants
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/super-admin/users" routerLinkActive="active">
+            Users
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/super-admin/messages" routerLinkActive="active">
+            Messages
+          </a>
+        </li>
+      </ul>
+      <ul class="navbar-nav me-auto" *ngIf="!isSuperAdmin">
         <li class="nav-item">
           <a class="nav-link" routerLink="/dashboard" routerLinkActive="active">
             Dashboard
@@ -50,6 +72,14 @@
         </li>
       </ul>
       <ul class="navbar-nav">
+        <li class="nav-item d-flex align-items-center me-lg-2">
+          <button type="button" class="btn btn-link nav-link theme-toggle px-2"
+                  (click)="toggleTheme()"
+                  [title]="themeService.isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+                  aria-label="Toggle color theme">
+            <i class="bi" [ngClass]="themeService.isDark ? 'bi-sun-fill' : 'bi-moon-stars-fill'"></i>
+          </button>
+        </li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             {{ authService.currentUserValue?.full_name }}

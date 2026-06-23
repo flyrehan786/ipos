@@ -33,14 +33,38 @@ async function createTables() {
   });
 
   await connection.query(`
+    CREATE TABLE IF NOT EXISTS tenants (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(150) NOT NULL,
+      slug VARCHAR(80) UNIQUE NOT NULL,
+      status ENUM('active', 'inactive') DEFAULT 'active',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )
+  `);
+
+  await connection.query(`
+    CREATE TABLE IF NOT EXISTS contact_messages (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(100) NOT NULL,
+      email VARCHAR(100) NOT NULL,
+      subject VARCHAR(200),
+      message TEXT NOT NULL,
+      status ENUM('new', 'read', 'archived') DEFAULT 'new',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await connection.query(`
     CREATE TABLE IF NOT EXISTS users (
       id INT AUTO_INCREMENT PRIMARY KEY,
       username VARCHAR(50) UNIQUE NOT NULL,
       email VARCHAR(100) UNIQUE NOT NULL,
       password VARCHAR(255) NOT NULL,
       full_name VARCHAR(100) NOT NULL,
-      role ENUM('admin', 'manager', 'cashier') DEFAULT 'cashier',
+      role ENUM('super_admin', 'admin', 'manager', 'cashier') DEFAULT 'cashier',
       status ENUM('active', 'inactive') DEFAULT 'active',
+      tenant_id INT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )
@@ -55,6 +79,7 @@ async function createTables() {
       entity_type VARCHAR(50),
       entity_id VARCHAR(50),
       details TEXT,
+      tenant_id INT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `);
@@ -71,6 +96,7 @@ async function createTables() {
       tax_id VARCHAR(50),
       credit_limit DECIMAL(15, 2) DEFAULT 0,
       status ENUM('active', 'inactive') DEFAULT 'active',
+      tenant_id INT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )
@@ -90,6 +116,7 @@ async function createTables() {
       stock_quantity INT DEFAULT 0,
       min_stock_level INT DEFAULT 10,
       status ENUM('active', 'inactive') DEFAULT 'active',
+      tenant_id INT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )
@@ -112,6 +139,7 @@ async function createTables() {
       payment_status ENUM('unpaid', 'partial', 'paid') DEFAULT 'unpaid',
       status ENUM('pending', 'completed', 'cancelled') DEFAULT 'completed',
       notes TEXT,
+      tenant_id INT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE SET NULL,
@@ -152,6 +180,7 @@ async function createTables() {
       payment_status ENUM('unpaid', 'partial', 'paid') DEFAULT 'unpaid',
       status ENUM('pending', 'completed', 'cancelled') DEFAULT 'completed',
       notes TEXT,
+      tenant_id INT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -185,6 +214,7 @@ async function createTables() {
       transaction_date DATE NOT NULL,
       notes TEXT,
       user_id INT NOT NULL,
+      tenant_id INT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )
@@ -204,12 +234,26 @@ async function seedData() {
     multipleStatements: true
   });
 
+  console.log('Seeding default tenant...');
+  await connection.query(
+    `INSERT INTO tenants (id, name, slug, status) VALUES (1, 'Default Organization', 'default', 'active')
+     ON DUPLICATE KEY UPDATE name = name`
+  );
+
+  console.log('Seeding super admin...');
+  const superHashed = await bcrypt.hash('superadmin123', 10);
+  await connection.query(
+    `INSERT INTO users (username, email, password, full_name, role, status, tenant_id)
+     VALUES (?, ?, ?, ?, 'super_admin', 'active', NULL)`,
+    ['superadmin', 'superadmin@omnify.com', superHashed, 'Super Admin']
+  );
+
   console.log('Seeding users...');
   const hashedPassword = await bcrypt.hash('password123', 10);
   const userValues = [];
-  userValues.push(['admin', 'admin@pos.com', hashedPassword, 'Admin User', 'admin', 'active']);
-  userValues.push(['manager', 'manager@pos.com', hashedPassword, 'Manager User', 'manager', 'active']);
-  userValues.push(['cashier', 'cashier@pos.com', hashedPassword, 'Cashier User', 'cashier', 'active']);
+  userValues.push(['admin', 'admin@pos.com', hashedPassword, 'Admin User', 'admin', 'active', 1]);
+  userValues.push(['manager', 'manager@pos.com', hashedPassword, 'Manager User', 'manager', 'active', 1]);
+  userValues.push(['cashier', 'cashier@pos.com', hashedPassword, 'Cashier User', 'cashier', 'active', 1]);
 
   for (let i = 4; i <= 1000; i++) {
     const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
@@ -222,12 +266,13 @@ async function seedData() {
       hashedPassword,
       `${firstName} ${lastName}`,
       role,
-      status
+      status,
+      1
     ]);
   }
 
   await connection.query(
-    'INSERT INTO users (username, email, password, full_name, role, status) VALUES ?',
+    'INSERT INTO users (username, email, password, full_name, role, status, tenant_id) VALUES ?',
     [userValues]
   );
   console.log('1000 users seeded');
@@ -249,12 +294,13 @@ async function seedData() {
       country,
       `TAX${Math.floor(100000 + Math.random() * 900000)}`,
       Math.floor(Math.random() * 100000),
-      status
+      status,
+      1
     ]);
   }
 
   await connection.query(
-    'INSERT INTO clients (name, email, phone, address, city, country, tax_id, credit_limit, status) VALUES ?',
+    'INSERT INTO clients (name, email, phone, address, city, country, tax_id, credit_limit, status, tenant_id) VALUES ?',
     [clientValues]
   );
   console.log('1000 clients seeded');
@@ -283,8 +329,8 @@ async function seedData() {
   }
 
   await connection.query(
-    'INSERT INTO products (name, sku, barcode, description, category, unit, purchase_price, sale_price, stock_quantity, min_stock_level, status) VALUES ?',
-    [productValues]
+    'INSERT INTO products (name, sku, barcode, description, category, unit, purchase_price, sale_price, stock_quantity, min_stock_level, status, tenant_id) VALUES ?',
+    [productValues.map((p) => [...p, 1])]
   );
   console.log('1000 products seeded');
 
@@ -324,8 +370,8 @@ async function seedData() {
     const paymentStatus = paidAmount >= totalAmount ? 'paid' : (paidAmount > 0 ? 'partial' : 'unpaid');
 
     const [result] = await connection.query(
-      'INSERT INTO purchase_orders (order_number, supplier_name, user_id, order_date, subtotal, discount_type, discount_value, tax_rate, tax_amount, total_amount, paid_amount, payment_status, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [`PO${String(i).padStart(6, '0')}`, `Supplier ${Math.floor(Math.random() * 100) + 1}`, userId, orderDate, subtotal, discountType, discountValue, taxRate, taxAmount, totalAmount, paidAmount, paymentStatus, status]
+      'INSERT INTO purchase_orders (order_number, supplier_name, user_id, order_date, subtotal, discount_type, discount_value, tax_rate, tax_amount, total_amount, paid_amount, payment_status, status, tenant_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [`PO${String(i).padStart(6, '0')}`, `Supplier ${Math.floor(Math.random() * 100) + 1}`, userId, orderDate, subtotal, discountType, discountValue, taxRate, taxAmount, totalAmount, paidAmount, paymentStatus, status, 1]
     );
 
     const orderId = result.insertId;
@@ -337,8 +383,8 @@ async function seedData() {
 
     if (paidAmount > 0) {
       await connection.query(
-        'INSERT INTO transactions (transaction_type, reference_type, reference_id, amount, payment_method, transaction_date, notes, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        ['expense', 'purchase_order', orderId, paidAmount, paymentMethods[Math.floor(Math.random() * paymentMethods.length)], orderDate, `Payment for PO${String(i).padStart(6, '0')}`, userId]
+        'INSERT INTO transactions (transaction_type, reference_type, reference_id, amount, payment_method, transaction_date, notes, user_id, tenant_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        ['expense', 'purchase_order', orderId, paidAmount, paymentMethods[Math.floor(Math.random() * paymentMethods.length)], orderDate, `Payment for PO${String(i).padStart(6, '0')}`, userId, 1]
       );
     }
 
@@ -383,8 +429,8 @@ async function seedData() {
     const paymentStatus = paidAmount >= totalAmount ? 'paid' : (paidAmount > 0 ? 'partial' : 'unpaid');
 
     const [result] = await connection.query(
-      'INSERT INTO sale_orders (order_number, client_id, user_id, order_date, subtotal, discount_type, discount_value, tax_rate, tax_amount, total_amount, paid_amount, payment_status, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [`SO${String(i).padStart(6, '0')}`, clientId, userId, orderDate, subtotal, discountType, discountValue, taxRate, taxAmount, totalAmount, paidAmount, paymentStatus, status]
+      'INSERT INTO sale_orders (order_number, client_id, user_id, order_date, subtotal, discount_type, discount_value, tax_rate, tax_amount, total_amount, paid_amount, payment_status, status, tenant_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [`SO${String(i).padStart(6, '0')}`, clientId, userId, orderDate, subtotal, discountType, discountValue, taxRate, taxAmount, totalAmount, paidAmount, paymentStatus, status, 1]
     );
 
     const orderId = result.insertId;
@@ -396,8 +442,8 @@ async function seedData() {
 
     if (paidAmount > 0) {
       await connection.query(
-        'INSERT INTO transactions (transaction_type, reference_type, reference_id, amount, payment_method, transaction_date, notes, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        ['income', 'sale_order', orderId, paidAmount, paymentMethods[Math.floor(Math.random() * paymentMethods.length)], orderDate, `Payment for SO${String(i).padStart(6, '0')}`, userId]
+        'INSERT INTO transactions (transaction_type, reference_type, reference_id, amount, payment_method, transaction_date, notes, user_id, tenant_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        ['income', 'sale_order', orderId, paidAmount, paymentMethods[Math.floor(Math.random() * paymentMethods.length)], orderDate, `Payment for SO${String(i).padStart(6, '0')}`, userId, 1]
       );
     }
 

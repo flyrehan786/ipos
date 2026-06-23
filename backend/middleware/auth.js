@@ -43,5 +43,31 @@ const authorizeRole = (...allowedRoles) => {
   };
 };
 
+/**
+ * Restricts a route to the platform super-admin (cross-tenant operator).
+ * Must run after authenticateToken.
+ */
+const requireSuperAdmin = (req, res, next) => {
+  if (!req.user || req.user.role !== 'super_admin') {
+    return res.status(403).json({ error: 'Super admin access required' });
+  }
+  next();
+};
+
+/**
+ * Restricts a route to tenant administrators. Within a tenant, only the
+ * 'admin' role may perform mutating actions (edit/delete/bulk). Non-admin
+ * roles (manager/cashier) are read/create only. Super-admins are not tenant
+ * users and are intentionally excluded from tenant-scoped routes.
+ */
+const requireTenantAdmin = (req, res, next) => {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin privileges required for this action' });
+  }
+  next();
+};
+
 module.exports = authenticateToken;
 module.exports.authorizeRole = authorizeRole;
+module.exports.requireSuperAdmin = requireSuperAdmin;
+module.exports.requireTenantAdmin = requireTenantAdmin;

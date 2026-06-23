@@ -26,6 +26,11 @@ import { BarcodeScannerComponent } from './components/barcode-scanner/barcode-sc
 import { ProfileComponent } from './components/profile/profile.component';
 import { ChangePasswordComponent } from './components/change-password/change-password.component';
 import { AuditLogListComponent } from './components/audit-logs/audit-log-list/audit-log-list.component';
+import { SuperAdminDashboardComponent } from './components/super-admin/super-admin-dashboard/super-admin-dashboard.component';
+import { SuperAdminTenantsComponent } from './components/super-admin/super-admin-tenants/super-admin-tenants.component';
+import { SuperAdminUsersComponent } from './components/super-admin/super-admin-users/super-admin-users.component';
+import { SuperAdminMessagesComponent } from './components/super-admin/super-admin-messages/super-admin-messages.component';
+import { WebsiteComponent } from './components/website/website.component';
 
 @NgModule({
   declarations: [
@@ -48,7 +53,12 @@ import { AuditLogListComponent } from './components/audit-logs/audit-log-list/au
     BarcodeScannerComponent,
     ProfileComponent,
     ChangePasswordComponent,
-    AuditLogListComponent
+    AuditLogListComponent,
+    SuperAdminDashboardComponent,
+    SuperAdminTenantsComponent,
+    SuperAdminUsersComponent,
+    SuperAdminMessagesComponent,
+    WebsiteComponent
   ],
   imports: [
     BrowserModule,

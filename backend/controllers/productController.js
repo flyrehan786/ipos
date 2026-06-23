@@ -7,7 +7,7 @@ const { recordAudit } = require('../utils/audit');
 
 exports.exportProducts = async (req, res) => {
   try {
-    const products = await Product.getAll();
+    const products = await Product.getAll(req.user.tenant_id);
     const csv = toCsv(products);
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', 'attachment; filename="products.csv"');
@@ -23,10 +23,10 @@ exports.getAllProducts = async (req, res) => {
     if (req.query.page !== undefined) {
       const { page, limit, offset } = getPaginationParams(req.query);
       const search = req.query.search || req.query.q || '';
-      const { data, total } = await Product.getPaginated({ limit, offset, search });
+      const { data, total } = await Product.getPaginated({ limit, offset, search, tenantId: req.user.tenant_id });
       return res.json(buildPaginatedResponse({ data, total, page, limit }));
     }
-    const products = await Product.getAll();
+    const products = await Product.getAll(req.user.tenant_id);
     res.json(products);
   } catch (error) {
     console.error('Get all products error:', error);
@@ -36,7 +36,7 @@ exports.getAllProducts = async (req, res) => {
 
 exports.getProductById = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id, req.user.tenant_id);
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
     }
@@ -49,7 +49,7 @@ exports.getProductById = async (req, res) => {
 
 exports.getProductByBarcode = async (req, res) => {
   try {
-    const product = await Product.findByBarcode(req.params.barcode);
+    const product = await Product.findByBarcode(req.params.barcode, req.user.tenant_id);
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
     }
@@ -66,7 +66,7 @@ exports.searchProducts = async (req, res) => {
     if (!q) {
       return res.status(400).json({ error: 'Search term is required' });
     }
-    const products = await Product.search(q);
+    const products = await Product.search(q, req.user.tenant_id);
     res.json(products);
   } catch (error) {
     console.error('Search products error:', error);
@@ -76,7 +76,7 @@ exports.searchProducts = async (req, res) => {
 
 exports.getLowStockProducts = async (req, res) => {
   try {
-    const products = await Product.getLowStock();
+    const products = await Product.getLowStock(req.user.tenant_id);
     res.json(products);
   } catch (error) {
     console.error('Get low stock products error:', error);
@@ -92,7 +92,7 @@ exports.createProduct = async (req, res) => {
       return res.status(400).json({ error: 'Name and SKU are required' });
     }
 
-    const existingSku = await Product.findBySku(sku);
+    const existingSku = await Product.findBySku(sku, req.user.tenant_id);
     if (existingSku) {
       return res.status(400).json({ error: 'SKU already exists' });
     }
@@ -108,6 +108,8 @@ exports.createProduct = async (req, res) => {
       sale_price: sale_price || 0,
       stock_quantity: stock_quantity || 0,
       min_stock_level: min_stock_level || 10,
+      status: status || 'active',
+      tenant_id: req.user.tenant_id
     });
 
     await recordAudit(req, 'create', 'product', productId);
@@ -126,7 +128,7 @@ exports.updateProduct = async (req, res) => {
       return res.status(400).json({ error: 'Name and SKU are required' });
     }
 
-    const existingSku = await Product.findBySku(sku);
+    const existingSku = await Product.findBySku(sku, req.user.tenant_id);
     if (existingSku && existingSku.id != req.params.id) {
       return res.status(400).json({ error: 'SKU already exists' });
     }
@@ -143,7 +145,7 @@ exports.updateProduct = async (req, res) => {
       stock_quantity: stock_quantity || 0,
       min_stock_level: min_stock_level || 10,
       status: status || 'active'
-    });
+    }, req.user.tenant_id);
 
     res.json({ message: 'Product updated successfully' });
   } catch (error) {
@@ -154,7 +156,7 @@ exports.updateProduct = async (req, res) => {
 
 exports.deleteProduct = async (req, res) => {
   try {
-    await Product.delete(req.params.id);
+    await Product.delete(req.params.id, req.user.tenant_id);
     await recordAudit(req, 'delete', 'product', req.params.id);
     res.json({ message: 'Product deleted successfully' });
   } catch (error) {
@@ -169,7 +171,7 @@ exports.bulkDeleteProducts = async (req, res) => {
     if (ids.length === 0) {
       return res.status(400).json({ error: 'A non-empty array of valid ids is required' });
     }
-    const deleted = await Product.bulkDelete(ids);
+    const deleted = await Product.bulkDelete(ids, req.user.tenant_id);
     await recordAudit(req, 'bulk-delete', 'product', ids.join(','), { deleted });
     res.json({ message: `${deleted} product(s) deleted successfully`, deleted });
   } catch (error) {
@@ -187,7 +189,7 @@ exports.bulkUpdateProductStatus = async (req, res) => {
     if (!isValidStatus(req.body.status)) {
       return res.status(400).json({ error: 'status must be "active" or "inactive"' });
     }
-    const updated = await Product.bulkUpdateStatus(ids, req.body.status);
+    const updated = await Product.bulkUpdateStatus(ids, req.body.status, req.user.tenant_id);
     await recordAudit(req, 'bulk-status', 'product', ids.join(','), { status: req.body.status, updated });
     res.json({ message: `${updated} product(s) updated successfully`, updated });
   } catch (error) {

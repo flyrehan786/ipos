@@ -5,7 +5,7 @@ exports.getAuditLogs = async (req, res) => {
   try {
     const { page, limit, offset } = getPaginationParams(req.query);
     const search = req.query.search || req.query.q || '';
-    const { data, total } = await AuditLog.getPaginated({ limit, offset, search });
+    const { data, total } = await AuditLog.getPaginated({ limit, offset, search, tenantId: req.user.tenant_id });
     res.json(buildPaginatedResponse({ data, total, page, limit }));
   } catch (error) {
     console.error('Get audit logs error:', error);

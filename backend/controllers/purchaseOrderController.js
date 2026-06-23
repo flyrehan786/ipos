@@ -8,7 +8,7 @@ const { recordAudit } = require('../utils/audit');
 
 exports.exportPurchaseOrders = async (req, res) => {
   try {
-    const orders = await PurchaseOrder.getAll();
+    const orders = await PurchaseOrder.getAll(req.user.tenant_id);
     const csv = toCsv(orders);
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', 'attachment; filename="purchase-orders.csv"');
@@ -24,10 +24,10 @@ exports.getAllPurchaseOrders = async (req, res) => {
     if (req.query.page !== undefined) {
       const { page, limit, offset } = getPaginationParams(req.query);
       const search = req.query.search || req.query.q || '';
-      const { data, total } = await PurchaseOrder.getPaginated({ limit, offset, search });
+      const { data, total } = await PurchaseOrder.getPaginated({ limit, offset, search, tenantId: req.user.tenant_id });
       return res.json(buildPaginatedResponse({ data, total, page, limit }));
     }
-    const orders = await PurchaseOrder.getAll();
+    const orders = await PurchaseOrder.getAll(req.user.tenant_id);
     res.json(orders);
   } catch (error) {
     console.error('Get all purchase orders error:', error);
@@ -37,7 +37,7 @@ exports.getAllPurchaseOrders = async (req, res) => {
 
 exports.getPurchaseOrderById = async (req, res) => {
   try {
-    const order = await PurchaseOrder.findById(req.params.id);
+    const order = await PurchaseOrder.findById(req.params.id, req.user.tenant_id);
     if (!order) {
       return res.status(404).json({ error: 'Purchase order not found' });
     }
@@ -54,7 +54,7 @@ exports.getPurchaseOrdersByDateRange = async (req, res) => {
     if (!startDate || !endDate) {
       return res.status(400).json({ error: 'Start date and end date are required' });
     }
-    const orders = await PurchaseOrder.getByDateRange(startDate, endDate);
+    const orders = await PurchaseOrder.getByDateRange(startDate, endDate, req.user.tenant_id);
     res.json(orders);
   } catch (error) {
     console.error('Get purchase orders by date range error:', error);
@@ -97,7 +97,8 @@ exports.createPurchaseOrder = async (req, res) => {
         payment_method: payment_method || 'cash',
         transaction_date: new Date(),
         notes: `Payment for purchase order ${order_number}`,
-        user_id: req.user.id
+        user_id: req.user.id,
+        tenant_id: req.user.tenant_id
       });
     }
 
@@ -125,7 +126,7 @@ exports.updatePurchaseOrder = async (req, res) => {
       payment_status: payment_status || 'unpaid',
       status: status || 'completed',
       notes: notes || null
-    });
+    }, req.user.tenant_id);
 
     res.json({ message: 'Purchase order updated successfully' });
   } catch (error) {
@@ -142,7 +143,7 @@ exports.addPayment = async (req, res) => {
       return res.status(400).json({ error: 'Valid payment amount is required' });
     }
 
-    const order = await PurchaseOrder.findById(req.params.id);
+    const order = await PurchaseOrder.findById(req.params.id, req.user.tenant_id);
     if (!order) {
       return res.status(404).json({ error: 'Purchase order not found' });
     }
@@ -150,7 +151,7 @@ exports.addPayment = async (req, res) => {
     const newPaidAmount = parseFloat(order.paid_amount) + parseFloat(amount);
     const paymentStatus = newPaidAmount >= order.total_amount ? 'paid' : 'partial';
 
-    await PurchaseOrder.updatePayment(req.params.id, newPaidAmount, paymentStatus);
+    await PurchaseOrder.updatePayment(req.params.id, newPaidAmount, paymentStatus, req.user.tenant_id);
 
     await Transaction.create({
       transaction_type: 'expense',
@@ -160,7 +161,8 @@ exports.addPayment = async (req, res) => {
       payment_method: payment_method || 'cash',
       transaction_date: new Date(),
       notes: `Payment for purchase order ${order.order_number}`,
-      user_id: req.user.id
+      user_id: req.user.id,
+      tenant_id: req.user.tenant_id
     });
 
     res.json({ message: 'Payment added successfully' });
@@ -172,7 +174,7 @@ exports.addPayment = async (req, res) => {
 
 exports.deletePurchaseOrder = async (req, res) => {
   try {
-    await PurchaseOrder.delete(req.params.id);
+    await PurchaseOrder.delete(req.params.id, req.user.tenant_id);
     res.json({ message: 'Purchase order deleted successfully' });
   } catch (error) {
     console.error('Delete purchase order error:', error);
@@ -190,7 +192,7 @@ exports.bulkUpdatePurchaseOrderStatus = async (req, res) => {
     if (!isValidOrderStatus(status)) {
       return res.status(400).json({ error: 'Invalid status value' });
     }
-    const updated = await PurchaseOrder.bulkUpdateStatus(ids, status);
+    const updated = await PurchaseOrder.bulkUpdateStatus(ids, status, req.user.tenant_id);
     await recordAudit(req, 'bulk-status', 'purchase_order', ids.join(','), { status, updated });
     res.json({ message: 'Purchase order status updated', updated });
   } catch (error) {

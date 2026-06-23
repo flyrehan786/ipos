@@ -3,40 +3,42 @@ const db = require('../config/database');
 class Transaction {
   static async create(transactionData) {
     const [result] = await db.execute(
-      'INSERT INTO transactions (transaction_type, reference_type, reference_id, amount, payment_method, transaction_date, notes, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [transactionData.transaction_type, transactionData.reference_type, transactionData.reference_id, transactionData.amount, transactionData.payment_method, transactionData.transaction_date, transactionData.notes, transactionData.user_id]
+      'INSERT INTO transactions (transaction_type, reference_type, reference_id, amount, payment_method, transaction_date, notes, user_id, tenant_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [transactionData.transaction_type, transactionData.reference_type, transactionData.reference_id, transactionData.amount, transactionData.payment_method, transactionData.transaction_date, transactionData.notes, transactionData.user_id, transactionData.tenant_id]
     );
     return result.insertId;
   }
 
-  static async findById(id) {
+  static async findById(id, tenantId) {
     const [rows] = await db.execute(
       `SELECT t.*, u.full_name as user_name 
        FROM transactions t 
        LEFT JOIN users u ON t.user_id = u.id 
-       WHERE t.id = ?`,
-      [id]
+       WHERE t.id = ? AND t.tenant_id = ?`,
+      [id, tenantId]
     );
     return rows[0];
   }
 
-  static async getAll() {
+  static async getAll(tenantId) {
     const [rows] = await db.execute(
       `SELECT t.*, u.full_name as user_name 
        FROM transactions t 
        LEFT JOIN users u ON t.user_id = u.id 
-       ORDER BY t.created_at DESC`
+       WHERE t.tenant_id = ? 
+       ORDER BY t.created_at DESC`,
+      [tenantId]
     );
     return rows;
   }
 
-  static async getPaginated({ limit, offset, search }) {
-    let where = '';
-    let params = [];
+  static async getPaginated({ limit, offset, search, tenantId }) {
+    let where = 'WHERE t.tenant_id = ?';
+    const params = [tenantId];
     if (search) {
-      where = 'WHERE t.payment_method LIKE ? OR t.reference_type LIKE ? OR t.notes LIKE ? OR u.full_name LIKE ?';
+      where += ' AND (t.payment_method LIKE ? OR t.reference_type LIKE ? OR t.notes LIKE ? OR u.full_name LIKE ?)';
       const like = `%${search}%`;
-      params = [like, like, like, like];
+      params.push(like, like, like, like);
     }
     const [countRows] = await db.execute(
       `SELECT COUNT(*) AS total FROM transactions t LEFT JOIN users u ON t.user_id = u.id ${where}`,
@@ -53,42 +55,43 @@ class Transaction {
     return { data: rows, total: countRows[0].total };
   }
 
-  static async getByDateRange(startDate, endDate) {
+  static async getByDateRange(startDate, endDate, tenantId) {
     const [rows] = await db.execute(
       `SELECT t.*, u.full_name as user_name 
        FROM transactions t 
        LEFT JOIN users u ON t.user_id = u.id 
-       WHERE t.transaction_date BETWEEN ? AND ? 
+       WHERE t.tenant_id = ? AND t.transaction_date BETWEEN ? AND ? 
        ORDER BY t.transaction_date DESC`,
-      [startDate, endDate]
+      [tenantId, startDate, endDate]
     );
     return rows;
   }
 
-  static async getByReference(referenceType, referenceId) {
+  static async getByReference(referenceType, referenceId, tenantId) {
     const [rows] = await db.execute(
       `SELECT t.*, u.full_name as user_name 
        FROM transactions t 
        LEFT JOIN users u ON t.user_id = u.id 
-       WHERE t.reference_type = ? AND t.reference_id = ? 
+       WHERE t.tenant_id = ? AND t.reference_type = ? AND t.reference_id = ? 
        ORDER BY t.created_at DESC`,
-      [referenceType, referenceId]
+      [tenantId, referenceType, referenceId]
     );
     return rows;
   }
 
-  static async delete(id) {
-    const [result] = await db.execute('DELETE FROM transactions WHERE id = ?', [id]);
+  static async delete(id, tenantId) {
+    const [result] = await db.execute('DELETE FROM transactions WHERE id = ? AND tenant_id = ?', [id, tenantId]);
     return result.affectedRows;
   }
 
-  static async getSummary() {
+  static async getSummary(tenantId) {
     const [rows] = await db.execute(
       `SELECT 
          COALESCE(SUM(CASE WHEN transaction_type = 'income' THEN amount ELSE 0 END), 0) AS total_income,
          COALESCE(SUM(CASE WHEN transaction_type = 'expense' THEN amount ELSE 0 END), 0) AS total_expense,
          COUNT(*) AS total_count
-       FROM transactions`
+       FROM transactions WHERE tenant_id = ?`,
+      [tenantId]
     );
     const row = rows[0];
     return {

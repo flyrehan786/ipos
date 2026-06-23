@@ -1,5 +1,5 @@
-/* Flat light variant of the global gradient stat card for the summary tiles. */
+/* Flat surface variant of the global gradient stat card for the summary tiles. */
 .stat-card {
-  background: #ffffff;
-  border: 1px solid #dee2e6;
+  background: var(--bs-card-bg);
+  border: 1px solid var(--bs-border-color);
 }
