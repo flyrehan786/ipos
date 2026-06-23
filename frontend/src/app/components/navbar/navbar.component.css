@@ -1,0 +1,9 @@
+.navbar-brand.brand-omnify {
+  font-weight: 700;
+  font-style: italic;
+  color: #8b0000 !important;
+}
+
+.dropdown-item {
+  cursor: pointer;
+}

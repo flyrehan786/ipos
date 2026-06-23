@@ -13,6 +13,10 @@ export class TransactionService {
 
   constructor(private http: HttpClient) {}
 
+  exportCsv(): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/export`, { responseType: 'blob' });
+  }
+
   getAll(): Observable<Transaction[]> {
     return this.http.get<Transaction[]>(this.apiUrl);
   }

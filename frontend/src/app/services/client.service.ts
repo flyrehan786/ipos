@@ -13,6 +13,10 @@ export class ClientService {
 
   constructor(private http: HttpClient) {}
 
+  exportCsv(): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/export`, { responseType: 'blob' });
+  }
+
   getAll(): Observable<Client[]> {
     return this.http.get<Client[]>(this.apiUrl);
   }

@@ -1,5 +1,19 @@
 const Client = require('../models/Client');
 const { getPaginationParams, buildPaginatedResponse } = require('../utils/pagination');
+const { toCsv } = require('../utils/csv');
+
+exports.exportClients = async (req, res) => {
+  try {
+    const clients = await Client.getAll();
+    const csv = toCsv(clients);
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="clients.csv"');
+    res.send(csv);
+  } catch (error) {
+    console.error('Export clients error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
 
 exports.getAllClients = async (req, res) => {
   try {

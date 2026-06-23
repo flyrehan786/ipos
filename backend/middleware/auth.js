@@ -17,6 +17,11 @@ const authenticateToken = (req, res, next) => {
     if (err) {
       return res.status(403).json({ error: 'Invalid or expired token' });
     }
+    // Refresh tokens must only be exchanged at /auth/refresh, never used as
+    // access tokens for protected routes.
+    if (user && user.type === 'refresh') {
+      return res.status(403).json({ error: 'Invalid token type' });
+    }
     req.user = user;
     next();
   });

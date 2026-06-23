@@ -4,6 +4,7 @@ const purchaseOrderController = require('../controllers/purchaseOrderController'
 const authenticateToken = require('../middleware/auth');
 
 router.get('/', authenticateToken, purchaseOrderController.getAllPurchaseOrders);
+router.get('/export', authenticateToken, purchaseOrderController.exportPurchaseOrders);
 router.get('/date-range', authenticateToken, purchaseOrderController.getPurchaseOrdersByDateRange);
 router.get('/:id', authenticateToken, purchaseOrderController.getPurchaseOrderById);
 router.post('/', authenticateToken, purchaseOrderController.createPurchaseOrder);

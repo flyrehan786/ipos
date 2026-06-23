@@ -13,6 +13,10 @@ export class SaleOrderService {
 
   constructor(private http: HttpClient) {}
 
+  exportCsv(): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/export`, { responseType: 'blob' });
+  }
+
   getAll(): Observable<SaleOrder[]> {
     return this.http.get<SaleOrder[]>(this.apiUrl);
   }

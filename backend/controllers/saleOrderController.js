@@ -1,6 +1,20 @@
 const SaleOrder = require('../models/SaleOrder');
 const Transaction = require('../models/Transaction');
 const { getPaginationParams, buildPaginatedResponse } = require('../utils/pagination');
+const { toCsv } = require('../utils/csv');
+
+exports.exportSaleOrders = async (req, res) => {
+  try {
+    const orders = await SaleOrder.getAll();
+    const csv = toCsv(orders);
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="sale-orders.csv"');
+    res.send(csv);
+  } catch (error) {
+    console.error('Export sale orders error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
 
 exports.getAllSaleOrders = async (req, res) => {
   try {

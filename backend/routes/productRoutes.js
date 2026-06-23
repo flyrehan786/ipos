@@ -6,6 +6,7 @@ const { validate } = require('../middleware/validate');
 const { productSchema } = require('../middleware/validationSchemas');
 
 router.get('/', authenticateToken, productController.getAllProducts);
+router.get('/export', authenticateToken, productController.exportProducts);
 router.get('/search', authenticateToken, productController.searchProducts);
 router.get('/low-stock', authenticateToken, productController.getLowStockProducts);
 router.get('/barcode/:barcode', authenticateToken, productController.getProductByBarcode);

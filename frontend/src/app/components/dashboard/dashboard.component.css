@@ -1,0 +1,28 @@
+/* Dashboard overrides the global gradient stat card with a flat light card. */
+.stat-card {
+  background: #ffffff;
+  border: 1px solid #dee2e6;
+  padding: 10px;
+}
+
+.chart-filter-select {
+  width: 120px;
+  font-size: 0.8rem;
+}
+
+.chart-canvas-wrap {
+  height: 170px;
+}
+
+.table-scroll {
+  max-height: 140px;
+  overflow-y: auto;
+}
+
+.col-rank {
+  width: 30px;
+}
+
+.col-qty {
+  width: 50px;
+}

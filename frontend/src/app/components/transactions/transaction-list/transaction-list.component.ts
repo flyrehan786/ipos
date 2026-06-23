@@ -7,7 +7,8 @@ import { TransactionSummary } from '../../../models/pagination.model';
 
 @Component({
   selector: 'app-transaction-list',
-  templateUrl: './transaction-list.component.html'
+  templateUrl: './transaction-list.component.html',
+  styleUrls: ['./transaction-list.component.css']
 })
 export class TransactionListComponent implements OnInit, OnDestroy {
   paginatedTransactions: Transaction[] = [];

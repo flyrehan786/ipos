@@ -4,6 +4,7 @@ const transactionController = require('../controllers/transactionController');
 const authenticateToken = require('../middleware/auth');
 
 router.get('/', authenticateToken, transactionController.getAllTransactions);
+router.get('/export', authenticateToken, transactionController.exportTransactions);
 router.get('/summary', authenticateToken, transactionController.getSummary);
 router.get('/date-range', authenticateToken, transactionController.getTransactionsByDateRange);
 router.get('/reference/:referenceType/:referenceId', authenticateToken, transactionController.getTransactionsByReference);

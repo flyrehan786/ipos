@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
   <div class="container-fluid">
-    <a class="navbar-brand" routerLink="/dashboard" style="font-weight:700; font-style:italic; color:#8B0000 !important;">
+    <a class="navbar-brand brand-omnify" routerLink="/dashboard">
       Omnify
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -50,10 +50,10 @@
             {{ authService.currentUserValue?.full_name }}
           </a>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-            <li><a class="dropdown-item" routerLink="/profile" style="cursor: pointer;">My Profile</a></li>
-            <li><a class="dropdown-item" routerLink="/change-password" style="cursor: pointer;">Change Password</a></li>
+            <li><a class="dropdown-item" routerLink="/profile">My Profile</a></li>
+            <li><a class="dropdown-item" routerLink="/change-password">Change Password</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" (click)="logout()" style="cursor: pointer;">Logout</a></li>
+            <li><a class="dropdown-item" (click)="logout()">Logout</a></li>
           </ul>
         </li>
       </ul>

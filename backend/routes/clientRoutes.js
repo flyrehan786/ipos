@@ -6,6 +6,7 @@ const { validate } = require('../middleware/validate');
 const { clientSchema } = require('../middleware/validationSchemas');
 
 router.get('/', authenticateToken, clientController.getAllClients);
+router.get('/export', authenticateToken, clientController.exportClients);
 router.get('/search', authenticateToken, clientController.searchClients);
 router.get('/:id', authenticateToken, clientController.getClientById);
 router.post('/', authenticateToken, validate(clientSchema), clientController.createClient);

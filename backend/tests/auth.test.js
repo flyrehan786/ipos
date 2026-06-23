@@ -42,6 +42,16 @@ describe('authenticateToken middleware', () => {
     expect(req.user.role).toBe('admin');
     expect(res.statusCode).toBeNull();
   });
+
+  test('rejects a refresh-typed token used as an access token (403)', () => {
+    const token = jwt.sign({ id: 1, type: 'refresh' }, process.env.JWT_SECRET);
+    const req = { headers: { authorization: `Bearer ${token}` } };
+    const res = mockRes();
+    let called = false;
+    authenticateToken(req, res, () => { called = true; });
+    expect(called).toBe(false);
+    expect(res.statusCode).toBe(403);
+  });
 });
 
 describe('authorizeRole middleware', () => {
