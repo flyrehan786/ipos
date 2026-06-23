@@ -23,6 +23,8 @@ export class PurchaseOrderListComponent implements OnInit, OnDestroy {
   totalPages = 1;
   totalItems = 0;
 
+  selectedIds = new Set<number>();
+
   constructor(
     private purchaseOrderService: PurchaseOrderService,
     private router: Router
@@ -51,6 +53,7 @@ export class PurchaseOrderListComponent implements OnInit, OnDestroy {
 
   loadOrders(): void {
     this.loading = true;
+    this.selectedIds.clear();
     this.purchaseOrderService.getPaginated(this.currentPage, this.itemsPerPage, this.searchTerm).subscribe({
       next: (res) => {
         this.paginatedOrders = res.data;
@@ -114,5 +117,41 @@ export class PurchaseOrderListComponent implements OnInit, OnDestroy {
       case 'cancelled': return 'bg-danger';
       default: return 'bg-secondary';
     }
+  }
+
+  isSelected(id: number): boolean {
+    return this.selectedIds.has(id);
+  }
+
+  toggleSelect(id: number): void {
+    if (this.selectedIds.has(id)) {
+      this.selectedIds.delete(id);
+    } else {
+      this.selectedIds.add(id);
+    }
+  }
+
+  get allSelected(): boolean {
+    return this.paginatedOrders.length > 0 &&
+      this.paginatedOrders.every(o => this.selectedIds.has(o.id!));
+  }
+
+  toggleSelectAll(): void {
+    if (this.allSelected) {
+      this.paginatedOrders.forEach(o => this.selectedIds.delete(o.id!));
+    } else {
+      this.paginatedOrders.forEach(o => this.selectedIds.add(o.id!));
+    }
+  }
+
+  bulkSetStatus(status: 'pending' | 'completed' | 'cancelled'): void {
+    if (this.selectedIds.size === 0) {
+      return;
+    }
+    this.purchaseOrderService.bulkUpdateStatus(Array.from(this.selectedIds), status).subscribe({
+      next: () => {
+        this.loadOrders();
+      }
+    });
   }
 }

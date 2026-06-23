@@ -24,6 +24,7 @@ import { UserFormComponent } from './components/users/user-form/user-form.compon
 import { BarcodeScannerComponent } from './components/barcode-scanner/barcode-scanner.component';
 import { ProfileComponent } from './components/profile/profile.component';
 import { ChangePasswordComponent } from './components/change-password/change-password.component';
+import { AuditLogListComponent } from './components/audit-logs/audit-log-list/audit-log-list.component';
 
 @NgModule({
   declarations: [
@@ -44,7 +45,8 @@ import { ChangePasswordComponent } from './components/change-password/change-pas
     UserFormComponent,
     BarcodeScannerComponent,
     ProfileComponent,
-    ChangePasswordComponent
+    ChangePasswordComponent,
+    AuditLogListComponent
   ],
   imports: [
     BrowserModule,

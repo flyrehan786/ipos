@@ -50,4 +50,8 @@ export class SaleOrderService {
   delete(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
+
+  bulkUpdateStatus(ids: number[], status: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/bulk-status`, { ids, status });
+  }
 }

@@ -4,6 +4,17 @@
     <p>Manage your sales transactions</p>
   </div>
   <div class="d-flex gap-2">
+    <ng-container *ngIf="selectedIds.size > 0">
+      <button class="btn btn-success" (click)="bulkSetStatus('completed')">
+        Mark Completed ({{ selectedIds.size }})
+      </button>
+      <button class="btn btn-warning" (click)="bulkSetStatus('pending')">
+        Mark Pending
+      </button>
+      <button class="btn btn-danger" (click)="bulkSetStatus('cancelled')">
+        Mark Cancelled
+      </button>
+    </ng-container>
     <button class="btn btn-outline-secondary" (click)="exportCsv()">
       Export CSV
     </button>
@@ -31,6 +42,9 @@
       <table class="table table-hover">
         <thead>
           <tr>
+            <th style="width: 1%">
+              <input type="checkbox" [checked]="allSelected" (change)="toggleSelectAll()">
+            </th>
             <th>Order #</th>
             <th>Client</th>
             <th>Date</th>
@@ -43,7 +57,10 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let order of paginatedOrders">
+          <tr *ngFor="let order of paginatedOrders" [class.table-active]="isSelected(order.id!)">
+            <td>
+              <input type="checkbox" [checked]="isSelected(order.id!)" (change)="toggleSelect(order.id!)">
+            </td>
             <td>{{ order.order_number }}</td>
             <td>{{ order.client_name || 'Walk-in Customer' }}</td>
             <td>{{ order.order_date | date:'short' }}</td>
@@ -70,7 +87,7 @@
             </td>
           </tr>
           <tr *ngIf="paginatedOrders.length === 0">
-            <td colspan="9" class="text-center">No sale orders found</td>
+            <td colspan="10" class="text-center">No sale orders found</td>
           </tr>
         </tbody>
       </table>
