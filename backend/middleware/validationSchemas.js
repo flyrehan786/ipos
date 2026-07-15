@@ -65,11 +65,24 @@ const signupSchema = {
   organization_name: { type: 'string', maxLength: 150 }
 };
 
+const supplierSchema = {
+  name: { required: true, type: 'string', maxLength: 255 },
+  email: { type: 'email', maxLength: 100 },
+  phone: { required: true, type: 'string', maxLength: 30 },
+  address: { type: 'string', maxLength: 500 },
+  city: { type: 'string', maxLength: 100 },
+  country: { type: 'string', maxLength: 100 },
+  tax_id: { type: 'string', maxLength: 100 },
+  notes: { type: 'string', maxLength: 1000 },
+  status: { type: 'enum', values: ['active', 'inactive'] }
+};
+
 module.exports = {
   userCreateSchema,
   userUpdateSchema,
   clientSchema,
   productSchema,
   registerSchema,
-  signupSchema
+  signupSchema,
+  supplierSchema
 };

@@ -88,7 +88,7 @@ export class ClientListComponent implements OnInit, OnDestroy {
   }
 
   editClient(id: number): void {
-    this.router.navigate(['/clients/edit', id]);
+    this.router.navigate(['/app/clients/edit', id]);
   }
 
   deleteClient(id: number): void {

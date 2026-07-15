@@ -88,7 +88,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
   }
 
   editProduct(id: number): void {
-    this.router.navigate(['/products/edit', id]);
+    this.router.navigate(['/app/products/edit', id]);
   }
 
   deleteProduct(id: number): void {

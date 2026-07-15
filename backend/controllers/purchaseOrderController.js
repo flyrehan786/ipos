@@ -64,7 +64,7 @@ exports.getPurchaseOrdersByDateRange = async (req, res) => {
 
 exports.createPurchaseOrder = async (req, res) => {
   try {
-    const { order_number, supplier_name, order_date, items, subtotal, discount_type, discount_value, tax_rate, tax_amount, total_amount, paid_amount, payment_method, payment_status, status, notes } = req.body;
+    const { order_number, supplier_name, supplier_id, order_date, items, subtotal, discount_type, discount_value, tax_rate, tax_amount, total_amount, paid_amount, payment_method, payment_status, status, notes } = req.body;
 
     if (!order_number || !supplier_name || !items || items.length === 0) {
       return res.status(400).json({ error: 'Order number, supplier name, and items are required' });
@@ -73,6 +73,7 @@ exports.createPurchaseOrder = async (req, res) => {
     const orderId = await PurchaseOrder.create({
       order_number,
       supplier_name,
+      supplier_id: supplier_id || null,
       user_id: req.user.id,
       order_date: order_date || new Date(),
       items,
@@ -85,7 +86,8 @@ exports.createPurchaseOrder = async (req, res) => {
       paid_amount: paid_amount || 0,
       payment_status: payment_status || 'unpaid',
       status: status || 'completed',
-      notes: notes || null
+      notes: notes || null,
+      tenant_id: req.user.tenant_id
     });
 
     if (paid_amount > 0) {

@@ -1,7 +1,7 @@
 <div class="page-header d-flex justify-content-between align-items-center">
   <div>
-    <h2>Clients</h2>
-    <p>Manage your client database</p>
+    <h2>Suppliers</h2>
+    <p>Manage your supplier database</p>
   </div>
   <div class="d-flex gap-2">
     <button *ngIf="selectedIds.size > 0" class="btn btn-outline-success" (click)="bulkSetStatus('active')">
@@ -16,19 +16,19 @@
     <button class="btn btn-outline-secondary" (click)="exportCsv()">
       Export CSV
     </button>
-    <button class="btn btn-primary" routerLink="/app/clients/new">
-      Add Client
+    <button class="btn btn-primary" routerLink="/app/suppliers/new">
+      Add Supplier
     </button>
   </div>
 </div>
 
 <div class="card">
   <div class="card-header">
-    <span>Client List</span>
+    <span>Supplier List</span>
   </div>
   <div class="card-body">
     <div class="mb-3">
-      <input type="text" class="form-control" placeholder="Search clients..." 
+      <input type="text" class="form-control" placeholder="Search suppliers..."
              [(ngModel)]="searchTerm" (input)="onSearch()">
     </div>
 
@@ -48,38 +48,36 @@
             <th>Email</th>
             <th>Phone</th>
             <th>City</th>
-            <th>Credit Limit</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let client of paginatedClients" [class.table-active]="isSelected(client.id!)">
+          <tr *ngFor="let supplier of paginatedSuppliers" [class.table-active]="isSelected(supplier.id!)">
             <td>
-              <input type="checkbox" class="form-check-input" [checked]="isSelected(client.id!)" (change)="toggleSelect(client.id!)">
+              <input type="checkbox" class="form-check-input" [checked]="isSelected(supplier.id!)" (change)="toggleSelect(supplier.id!)">
             </td>
-            <td>{{ client.id }}</td>
-            <td>{{ client.name }}</td>
-            <td>{{ client.email || 'N/A' }}</td>
-            <td>{{ client.phone }}</td>
-            <td>{{ client.city || 'N/A' }}</td>
-            <td>{{ client.credit_limit | number:'1.2-2' }}</td>
+            <td>{{ supplier.id }}</td>
+            <td>{{ supplier.name }}</td>
+            <td>{{ supplier.email || 'N/A' }}</td>
+            <td>{{ supplier.phone }}</td>
+            <td>{{ supplier.city || 'N/A' }}</td>
             <td>
               <span class="badge bg-light text-dark border">
-                {{ client.status }}
+                {{ supplier.status }}
               </span>
             </td>
             <td>
-              <button class="btn btn-sm btn-info me-1" (click)="editClient(client.id!)">
+              <button class="btn btn-sm btn-info me-1" (click)="editSupplier(supplier.id!)">
                 Edit
               </button>
-              <button class="btn btn-sm btn-danger" (click)="deleteClient(client.id!)">
+              <button class="btn btn-sm btn-danger" (click)="deleteSupplier(supplier.id!)">
                 Delete
               </button>
             </td>
           </tr>
-          <tr *ngIf="paginatedClients.length === 0">
-            <td colspan="9" class="text-center">No clients found</td>
+          <tr *ngIf="paginatedSuppliers.length === 0">
+            <td colspan="8" class="text-center">No suppliers found</td>
           </tr>
         </tbody>
       </table>
@@ -90,7 +88,7 @@
             Previous
           </button>
           <span class="text-muted">
-            Page {{ currentPage }} of {{ totalPages }} ({{ totalItems }} total items)
+            Page {{ currentPage }} of {{ totalPages }} ({{ totalItems }} total)
           </span>
           <button class="btn btn-outline-primary" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
             Next

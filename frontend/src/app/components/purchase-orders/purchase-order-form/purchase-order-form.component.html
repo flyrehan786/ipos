@@ -20,8 +20,27 @@
               <input type="date" class="form-control" formControlName="order_date">
             </div>
             <div class="col-md-12 mb-3">
-              <label class="form-label">Supplier Name *</label>
-              <input type="text" class="form-control" formControlName="supplier_name">
+              <label class="form-label">Supplier *</label>
+              <div class="btn-group w-100 mb-2" role="group">
+                <input type="radio" class="btn-check" name="supplierMode" id="modeWalkin" autocomplete="off"
+                       [checked]="supplierMode === 'walkin'" (change)="onSupplierModeChange('walkin')">
+                <label class="btn btn-outline-secondary" for="modeWalkin">Walk-in Supplier</label>
+                <input type="radio" class="btn-check" name="supplierMode" id="modeExisting" autocomplete="off"
+                       [checked]="supplierMode === 'existing'" (change)="onSupplierModeChange('existing')">
+                <label class="btn btn-outline-secondary" for="modeExisting">Select Existing</label>
+              </div>
+              <div *ngIf="supplierMode === 'existing'">
+                <select class="form-select" (change)="onExistingSupplierSelect($event)">
+                  <option value="">-- Select Supplier --</option>
+                  <option *ngFor="let s of suppliers" [value]="s.id">{{ s.name }} ({{ s.phone }})</option>
+                </select>
+              </div>
+              <div *ngIf="supplierMode === 'walkin'">
+                <input type="text" class="form-control" formControlName="supplier_name" placeholder="Enter supplier name">
+              </div>
+              <div *ngIf="supplierMode === 'existing' && orderForm.value.supplier_name" class="form-text text-success">
+                Selected: {{ orderForm.value.supplier_name }}
+              </div>
             </div>
           </div>
         </form>

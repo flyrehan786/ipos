@@ -88,7 +88,7 @@ export class PurchaseOrderListComponent implements OnInit, OnDestroy {
   }
 
   viewOrder(id: number): void {
-    this.router.navigate(['/purchase-orders/edit', id]);
+    this.router.navigate(['/app/purchase-orders/edit', id]);
   }
 
   deleteOrder(id: number): void {

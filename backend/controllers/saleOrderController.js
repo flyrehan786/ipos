@@ -85,7 +85,8 @@ exports.createSaleOrder = async (req, res) => {
       paid_amount: paid_amount || 0,
       payment_status: payment_status || 'unpaid',
       status: status || 'completed',
-      notes: notes || null
+      notes: notes || null,
+      tenant_id: req.user.tenant_id
     });
 
     if (paid_amount > 0) {

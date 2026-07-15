@@ -189,7 +189,7 @@ export class SaleOrderFormComponent implements OnInit {
 
     request.subscribe({
       next: () => {
-        this.router.navigate(['/sale-orders']);
+        this.router.navigate(['/app/sale-orders']);
       },
       error: (error) => {
         this.error = error.error?.error || 'An error occurred';
@@ -199,6 +199,6 @@ export class SaleOrderFormComponent implements OnInit {
   }
 
   cancel(): void {
-    this.router.navigate(['/sale-orders']);
+    this.router.navigate(['/app/sale-orders']);
   }
 }

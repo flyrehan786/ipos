@@ -62,7 +62,7 @@ export class ChangePasswordComponent implements OnInit {
           this.passwordForm.reset();
           setTimeout(() => {
             this.authService.logout();
-            this.router.navigate(['/login']);
+            this.router.navigate(['/app/login']);
           }, 2000);
         },
         error: (err: any) => {

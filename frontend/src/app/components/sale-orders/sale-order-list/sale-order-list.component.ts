@@ -88,7 +88,7 @@ export class SaleOrderListComponent implements OnInit, OnDestroy {
   }
 
   viewOrder(id: number): void {
-    this.router.navigate(['/sale-orders/edit', id]);
+    this.router.navigate(['/app/sale-orders/edit', id]);
   }
 
   deleteOrder(id: number): void {

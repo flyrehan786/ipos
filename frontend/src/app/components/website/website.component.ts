@@ -66,7 +66,7 @@ export class WebsiteComponent implements OnInit {
     // Logged-in users should land in the app, not the marketing site.
     if (this.authService.isLoggedIn()) {
       const role = this.authService.currentUserValue?.role;
-      this.router.navigate([role === 'super_admin' ? '/super-admin' : '/dashboard']);
+      this.router.navigate([role === 'super_admin' ? '/app/super-admin' : '/app/dashboard']);
     }
   }
 
@@ -75,11 +75,11 @@ export class WebsiteComponent implements OnInit {
   }
 
   goToLogin(): void {
-    this.router.navigate(['/login']);
+    this.router.navigate(['/app/login']);
   }
 
   goToRegister(): void {
-    this.router.navigate(['/register']);
+    this.router.navigate(['/app/register']);
   }
 
   scrollTo(id: string): void {

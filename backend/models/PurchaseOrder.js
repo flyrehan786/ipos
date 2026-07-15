@@ -7,8 +7,8 @@ class PurchaseOrder {
       await connection.beginTransaction();
 
       const [result] = await connection.execute(
-        'INSERT INTO purchase_orders (order_number, supplier_name, user_id, order_date, subtotal, discount_type, discount_value, tax_rate, tax_amount, total_amount, paid_amount, payment_status, status, notes, tenant_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        [orderData.order_number, orderData.supplier_name, orderData.user_id, orderData.order_date, orderData.subtotal, orderData.discount_type, orderData.discount_value, orderData.tax_rate, orderData.tax_amount, orderData.total_amount, orderData.paid_amount, orderData.payment_status, orderData.status, orderData.notes, orderData.tenant_id]
+        'INSERT INTO purchase_orders (order_number, supplier_name, supplier_id, user_id, order_date, subtotal, discount_type, discount_value, tax_rate, tax_amount, total_amount, paid_amount, payment_status, status, notes, tenant_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [orderData.order_number, orderData.supplier_name, orderData.supplier_id || null, orderData.user_id, orderData.order_date, orderData.subtotal, orderData.discount_type, orderData.discount_value, orderData.tax_rate, orderData.tax_amount, orderData.total_amount, orderData.paid_amount, orderData.payment_status, orderData.status, orderData.notes, orderData.tenant_id]
       );
 
       const orderId = result.insertId;

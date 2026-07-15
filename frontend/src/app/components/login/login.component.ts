@@ -23,7 +23,7 @@ export class LoginComponent implements OnInit {
   ) {
     if (this.authService.isLoggedIn()) {
       const role = this.authService.currentUserValue?.role;
-      this.router.navigate([role === 'super_admin' ? '/super-admin' : '/dashboard']);
+      this.router.navigate([role === 'super_admin' ? '/app/super-admin' : '/app/dashboard']);
     }
   }
 
@@ -33,7 +33,7 @@ export class LoginComponent implements OnInit {
       password: ['', Validators.required]
     });
 
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/app/dashboard';
 
     if (this.route.snapshot.queryParams['registered']) {
       this.success = 'Account created successfully. Please sign in.';
@@ -51,8 +51,8 @@ export class LoginComponent implements OnInit {
     this.authService.login(this.loginForm.value).subscribe({
       next: () => {
         const role = this.authService.currentUserValue?.role;
-        if (role === 'super_admin' && this.returnUrl === '/dashboard') {
-          this.router.navigate(['/super-admin']);
+        if (role === 'super_admin' && this.returnUrl === '/app/dashboard') {
+          this.router.navigate(['/app/super-admin']);
         } else {
           this.router.navigate([this.returnUrl]);
         }

@@ -19,7 +19,7 @@ export class RegisterComponent implements OnInit {
     private authService: AuthService
   ) {
     if (this.authService.isLoggedIn()) {
-      this.router.navigate(['/dashboard']);
+      this.router.navigate(['/app/dashboard']);
     }
   }
 
@@ -55,7 +55,7 @@ export class RegisterComponent implements OnInit {
 
     this.authService.register({ full_name, username, email, password }).subscribe({
       next: () => {
-        this.router.navigate(['/login'], { queryParams: { registered: '1' } });
+        this.router.navigate(['/app/login'], { queryParams: { registered: '1' } });
       },
       error: (error) => {
         this.error = error.error?.error || 'Registration failed. Please try again.';

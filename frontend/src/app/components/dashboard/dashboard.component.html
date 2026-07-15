@@ -88,13 +88,13 @@
             </div>
             <div class="card-body p-2">
               <div class="d-grid gap-2">
-                <a routerLink="/sale-orders/new" class="btn btn-primary">
+                <a routerLink="/app/sale-orders/new" class="btn btn-primary">
                   <i class="bi bi-cart-plus"></i> New Sale
                 </a>
-                <a routerLink="/purchase-orders/new" class="btn btn-warning">
+                <a routerLink="/app/purchase-orders/new" class="btn btn-warning">
                   <i class="bi bi-bag-plus"></i> New Purchase
                 </a>
-                <a routerLink="/products/new" class="btn btn-info text-white">
+                <a routerLink="/app/products/new" class="btn btn-info text-white">
                   <i class="bi bi-plus-circle"></i> Add Product
                 </a>
               </div>
@@ -184,7 +184,7 @@
                 </button>
               </div>
 
-              <a routerLink="/products" class="btn btn-sm btn-primary mt-2 w-100">View All</a>
+              <a routerLink="/app/products" class="btn btn-sm btn-primary mt-2 w-100">View All</a>
             </div>
             <div *ngIf="stats.lowStockProducts === 0" class="alert alert-success mb-0 small">
               All products well stocked!

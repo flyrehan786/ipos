@@ -72,7 +72,7 @@ export class UserFormComponent implements OnInit {
 
     request.subscribe({
       next: () => {
-        this.router.navigate(['/users']);
+        this.router.navigate(['/app/users']);
       },
       error: (error) => {
         this.error = error.error?.error || 'An error occurred';
@@ -82,6 +82,6 @@ export class UserFormComponent implements OnInit {
   }
 
   cancel(): void {
-    this.router.navigate(['/users']);
+    this.router.navigate(['/app/users']);
   }
 }

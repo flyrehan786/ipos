@@ -75,7 +75,7 @@ export class ProductFormComponent implements OnInit {
 
     request.subscribe({
       next: () => {
-        this.router.navigate(['/products']);
+        this.router.navigate(['/app/products']);
       },
       error: (error) => {
         this.error = error.error?.error || 'An error occurred';
@@ -85,7 +85,7 @@ export class ProductFormComponent implements OnInit {
   }
 
   cancel(): void {
-    this.router.navigate(['/products']);
+    this.router.navigate(['/app/products']);
   }
 
   toggleScannerMode(): void {

@@ -31,6 +31,8 @@ import { SuperAdminTenantsComponent } from './components/super-admin/super-admin
 import { SuperAdminUsersComponent } from './components/super-admin/super-admin-users/super-admin-users.component';
 import { SuperAdminMessagesComponent } from './components/super-admin/super-admin-messages/super-admin-messages.component';
 import { WebsiteComponent } from './components/website/website.component';
+import { SupplierListComponent } from './components/suppliers/supplier-list/supplier-list.component';
+import { SupplierFormComponent } from './components/suppliers/supplier-form/supplier-form.component';
 
 @NgModule({
   declarations: [
@@ -58,7 +60,9 @@ import { WebsiteComponent } from './components/website/website.component';
     SuperAdminTenantsComponent,
     SuperAdminUsersComponent,
     SuperAdminMessagesComponent,
-    WebsiteComponent
+    WebsiteComponent,
+    SupplierListComponent,
+    SupplierFormComponent
   ],
   imports: [
     BrowserModule,

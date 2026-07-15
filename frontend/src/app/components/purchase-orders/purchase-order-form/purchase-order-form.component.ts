@@ -3,8 +3,10 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PurchaseOrderService } from '../../../services/purchase-order.service';
 import { ProductService } from '../../../services/product.service';
+import { SupplierService } from '../../../services/supplier.service';
 import { Product } from '../../../models/product.model';
 import { OrderItem } from '../../../models/order.model';
+import { Supplier } from '../../../models/supplier.model';
 
 @Component({
   selector: 'app-purchase-order-form',
@@ -19,6 +21,9 @@ export class PurchaseOrderFormComponent implements OnInit {
 
   products: Product[] = [];
   orderItems: OrderItem[] = [];
+  suppliers: Supplier[] = [];
+  supplierMode: 'existing' | 'walkin' = 'walkin';
+  selectedSupplierId?: number;
   
   selectedProduct?: Product;
   itemQuantity = 1;
@@ -30,7 +35,8 @@ export class PurchaseOrderFormComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private purchaseOrderService: PurchaseOrderService,
-    private productService: ProductService
+    private productService: ProductService,
+    private supplierService: SupplierService
   ) {}
 
   ngOnInit(): void {
@@ -47,6 +53,7 @@ export class PurchaseOrderFormComponent implements OnInit {
     });
 
     this.loadProducts();
+    this.loadSuppliers();
 
     this.route.params.subscribe(params => {
       if (params['id']) {
@@ -63,6 +70,29 @@ export class PurchaseOrderFormComponent implements OnInit {
         this.products = data.filter(p => p.status === 'active');
       }
     });
+  }
+
+  loadSuppliers(): void {
+    this.supplierService.getAll().subscribe({
+      next: (data) => {
+        this.suppliers = data.filter(s => s.status === 'active');
+      }
+    });
+  }
+
+  onSupplierModeChange(mode: 'existing' | 'walkin'): void {
+    this.supplierMode = mode;
+    this.selectedSupplierId = undefined;
+    this.orderForm.patchValue({ supplier_name: '' });
+  }
+
+  onExistingSupplierSelect(event: Event): void {
+    const id = +(event.target as HTMLSelectElement).value;
+    this.selectedSupplierId = id || undefined;
+    const supplier = this.suppliers.find(s => s.id === id);
+    if (supplier) {
+      this.orderForm.patchValue({ supplier_name: supplier.name });
+    }
   }
 
   loadOrder(): void {
@@ -153,6 +183,7 @@ export class PurchaseOrderFormComponent implements OnInit {
 
     const orderData = {
       ...this.orderForm.value,
+      supplier_id: this.supplierMode === 'existing' ? this.selectedSupplierId || null : null,
       items: this.orderItems,
       subtotal: this.calculateSubtotal(),
       tax_amount: this.calculateTax(),
@@ -168,7 +199,7 @@ export class PurchaseOrderFormComponent implements OnInit {
 
     request.subscribe({
       next: () => {
-        this.router.navigate(['/purchase-orders']);
+        this.router.navigate(['/app/purchase-orders']);
       },
       error: (error) => {
         this.error = error.error?.error || 'An error occurred';
@@ -178,6 +209,6 @@ export class PurchaseOrderFormComponent implements OnInit {
   }
 
   cancel(): void {
-    this.router.navigate(['/purchase-orders']);
+    this.router.navigate(['/app/purchase-orders']);
   }
 }

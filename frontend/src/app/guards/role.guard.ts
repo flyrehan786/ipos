@@ -13,7 +13,7 @@ export class RoleGuard implements CanActivate {
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
     if (!this.authService.isLoggedIn()) {
-      this.router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
+      this.router.navigate(['/app/login'], { queryParams: { returnUrl: state.url } });
       return false;
     }
 
@@ -25,7 +25,7 @@ export class RoleGuard implements CanActivate {
     }
 
     // Authenticated but not authorized for this route.
-    this.router.navigate(['/dashboard']);
+    this.router.navigate(['/app/dashboard']);
     return false;
   }
 }

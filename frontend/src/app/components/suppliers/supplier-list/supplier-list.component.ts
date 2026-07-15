@@ -1,22 +1,22 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { downloadBlob } from '../../../utils/download';
 import { Router } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { UserService } from '../../../services/user.service';
-import { User } from '../../../models/user.model';
+import { SupplierService } from '../../../services/supplier.service';
+import { Supplier } from '../../../models/supplier.model';
 
 @Component({
-  selector: 'app-user-list',
-  templateUrl: './user-list.component.html'
+  selector: 'app-supplier-list',
+  templateUrl: './supplier-list.component.html'
 })
-export class UserListComponent implements OnInit, OnDestroy {
-  paginatedUsers: User[] = [];
+export class SupplierListComponent implements OnInit, OnDestroy {
+  paginatedSuppliers: Supplier[] = [];
   loading = true;
   searchTerm = '';
   private searchSubject = new Subject<string>();
   private searchSub?: Subscription;
 
-  // Pagination (server-side)
   currentPage = 1;
   itemsPerPage = 10;
   totalPages = 1;
@@ -25,17 +25,17 @@ export class UserListComponent implements OnInit, OnDestroy {
   selectedIds = new Set<number>();
 
   constructor(
-    private userService: UserService,
+    private supplierService: SupplierService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.loadUsers();
+    this.loadSuppliers();
     this.searchSub = this.searchSubject
       .pipe(debounceTime(350), distinctUntilChanged())
       .subscribe(() => {
         this.currentPage = 1;
-        this.loadUsers();
+        this.loadSuppliers();
       });
   }
 
@@ -43,17 +43,24 @@ export class UserListComponent implements OnInit, OnDestroy {
     this.searchSub?.unsubscribe();
   }
 
-  loadUsers(): void {
+  exportCsv(): void {
+    this.supplierService.exportCsv().subscribe({
+      next: (blob) => downloadBlob(blob, 'suppliers.csv'),
+      error: () => {}
+    });
+  }
+
+  loadSuppliers(): void {
     this.loading = true;
     this.selectedIds.clear();
-    this.userService.getPaginated(this.currentPage, this.itemsPerPage, this.searchTerm).subscribe({
+    this.supplierService.getPaginated(this.currentPage, this.itemsPerPage, this.searchTerm).subscribe({
       next: (res) => {
-        this.paginatedUsers = res.data;
+        this.paginatedSuppliers = res.data;
         this.totalPages = res.totalPages;
         this.totalItems = res.total;
         if (this.currentPage > this.totalPages && this.totalPages >= 1) {
           this.currentPage = this.totalPages;
-          this.loadUsers();
+          this.loadSuppliers();
           return;
         }
         this.loading = false;
@@ -71,7 +78,7 @@ export class UserListComponent implements OnInit, OnDestroy {
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
       this.currentPage = page;
-      this.loadUsers();
+      this.loadSuppliers();
     }
   }
 
@@ -79,18 +86,9 @@ export class UserListComponent implements OnInit, OnDestroy {
     return Array.from({ length: this.totalPages }, (_, i) => i + 1);
   }
 
-  editUser(id: number): void {
-    this.router.navigate(['/app/users/edit', id]);
-  }
-
-  deleteUser(id: number): void {
-    if (confirm('Are you sure you want to delete this user?')) {
-      this.userService.delete(id).subscribe({
-        next: () => {
-          this.loadUsers();
-        }
-      });
-    }
+  get allSelected(): boolean {
+    return this.paginatedSuppliers.length > 0 &&
+      this.paginatedSuppliers.every(s => this.selectedIds.has(s.id!));
   }
 
   isSelected(id: number): boolean {
@@ -105,39 +103,41 @@ export class UserListComponent implements OnInit, OnDestroy {
     }
   }
 
-  get allSelected(): boolean {
-    return this.paginatedUsers.length > 0 &&
-      this.paginatedUsers.every(u => this.selectedIds.has(u.id!));
-  }
-
   toggleSelectAll(): void {
     if (this.allSelected) {
-      this.paginatedUsers.forEach(u => this.selectedIds.delete(u.id!));
+      this.paginatedSuppliers.forEach(s => this.selectedIds.delete(s.id!));
     } else {
-      this.paginatedUsers.forEach(u => this.selectedIds.add(u.id!));
+      this.paginatedSuppliers.forEach(s => this.selectedIds.add(s.id!));
     }
   }
 
-  bulkDelete(): void {
-    if (this.selectedIds.size === 0) {
-      return;
-    }
-    if (confirm(`Delete ${this.selectedIds.size} selected user(s)?`)) {
-      this.userService.bulkDelete(Array.from(this.selectedIds)).subscribe({
-        next: () => {
-          this.loadUsers();
-        }
+  editSupplier(id: number): void {
+    this.router.navigate(['/app/suppliers/edit', id]);
+  }
+
+  deleteSupplier(id: number): void {
+    if (confirm('Are you sure you want to delete this supplier?')) {
+      this.supplierService.delete(id).subscribe({
+        next: () => this.loadSuppliers()
       });
     }
   }
 
-  bulkSetStatus(status: 'active' | 'inactive'): void {
-    if (this.selectedIds.size === 0) {
-      return;
-    }
-    this.userService.bulkUpdateStatus(Array.from(this.selectedIds), status).subscribe({
+  bulkDelete(): void {
+    if (!confirm(`Delete ${this.selectedIds.size} supplier(s)?`)) return;
+    this.supplierService.bulkDelete([...this.selectedIds]).subscribe({
       next: () => {
-        this.loadUsers();
+        this.selectedIds.clear();
+        this.loadSuppliers();
+      }
+    });
+  }
+
+  bulkSetStatus(status: 'active' | 'inactive'): void {
+    this.supplierService.bulkUpdateStatus([...this.selectedIds], status).subscribe({
+      next: () => {
+        this.selectedIds.clear();
+        this.loadSuppliers();
       }
     });
   }

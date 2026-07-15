@@ -65,7 +65,7 @@ export class ClientFormComponent implements OnInit {
 
     request.subscribe({
       next: () => {
-        this.router.navigate(['/clients']);
+        this.router.navigate(['/app/clients']);
       },
       error: (error) => {
         this.error = error.error?.error || 'An error occurred';
@@ -75,6 +75,6 @@ export class ClientFormComponent implements OnInit {
   }
 
   cancel(): void {
-    this.router.navigate(['/clients']);
+    this.router.navigate(['/app/clients']);
   }
 }

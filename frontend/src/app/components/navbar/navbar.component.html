@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg bg-body-tertiary">
   <div class="container-fluid">
-    <a class="navbar-brand brand-omnify" [routerLink]="isSuperAdmin ? '/super-admin' : '/dashboard'">
+    <a class="navbar-brand brand-omnify" [routerLink]="isSuperAdmin ? '/app/super-admin' : '/app/dashboard'">
       Omnify
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -9,64 +9,69 @@
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav me-auto" *ngIf="isSuperAdmin">
         <li class="nav-item">
-          <a class="nav-link" routerLink="/super-admin" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          <a class="nav-link" routerLink="/app/super-admin" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
             Overview
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/super-admin/tenants" routerLinkActive="active">
+          <a class="nav-link" routerLink="/app/super-admin/tenants" routerLinkActive="active">
             Tenants
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/super-admin/users" routerLinkActive="active">
+          <a class="nav-link" routerLink="/app/super-admin/users" routerLinkActive="active">
             Users
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/super-admin/messages" routerLinkActive="active">
+          <a class="nav-link" routerLink="/app/super-admin/messages" routerLinkActive="active">
             Messages
           </a>
         </li>
       </ul>
       <ul class="navbar-nav me-auto" *ngIf="!isSuperAdmin">
         <li class="nav-item">
-          <a class="nav-link" routerLink="/dashboard" routerLinkActive="active">
+          <a class="nav-link" routerLink="/app/dashboard" routerLinkActive="active">
             Dashboard
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/sale-orders" routerLinkActive="active">
+          <a class="nav-link" routerLink="/app/sale-orders" routerLinkActive="active">
             Sales
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/purchase-orders" routerLinkActive="active">
+          <a class="nav-link" routerLink="/app/purchase-orders" routerLinkActive="active">
             Purchases
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/products" routerLinkActive="active">
+          <a class="nav-link" routerLink="/app/products" routerLinkActive="active">
             Products
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/clients" routerLinkActive="active">
+          <a class="nav-link" routerLink="/app/clients" routerLinkActive="active">
             Clients
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/transactions" routerLinkActive="active">
+          <a class="nav-link" routerLink="/app/suppliers" routerLinkActive="active">
+            Suppliers
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/app/transactions" routerLinkActive="active">
             Transactions
           </a>
         </li>
         <li class="nav-item" *ngIf="authService.currentUserValue?.role === 'admin'">
-          <a class="nav-link" routerLink="/users" routerLinkActive="active">
+          <a class="nav-link" routerLink="/app/users" routerLinkActive="active">
             Users
           </a>
         </li>
         <li class="nav-item" *ngIf="authService.currentUserValue?.role === 'admin'">
-          <a class="nav-link" routerLink="/audit-logs" routerLinkActive="active">
+          <a class="nav-link" routerLink="/app/audit-logs" routerLinkActive="active">
             Audit Logs
           </a>
         </li>
@@ -85,8 +90,8 @@
             {{ authService.currentUserValue?.full_name }}
           </a>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-            <li><a class="dropdown-item" routerLink="/profile">My Profile</a></li>
-            <li><a class="dropdown-item" routerLink="/change-password">Change Password</a></li>
+            <li><a class="dropdown-item" routerLink="/app/profile">My Profile</a></li>
+            <li><a class="dropdown-item" routerLink="/app/change-password">Change Password</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" (click)="logout()">Logout</a></li>
           </ul>
